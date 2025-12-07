@@ -7,10 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-
-/****************************************************
- GLOBAL
-****************************************************/
+/* ================= GLOBAL ================= */
 body {
     margin: 0;
     font-family: 'Poppins', sans-serif;
@@ -20,78 +17,31 @@ body {
     color: white;
     overflow-x: hidden;
 }
-
-h1, h2 {
-    font-family: 'Mountains of Christmas', cursive;
-    text-shadow: 3px 3px 8px #000;
-}
-
-.screen {
-    display: none;
-    padding-top: 120px;
-}
-.active {
-    display: block;
-}
-
-.container {
-    max-width: 1100px;
-    margin: auto;
-    padding: 40px;
-    background: rgba(0,0,0,0.45);
-    border-radius: 20px;
-    box-shadow: 0 0 20px #000;
-    text-align: center;
-}
-
-/****************************************************
- FROSTED GLASS TOP NAVIGATION
-****************************************************/
+h1, h2 { font-family: 'Mountains of Christmas', cursive; text-shadow: 3px 3px 8px #000; }
+.screen { display: none; padding-top: 120px; }
+.active { display: block; }
+.container { max-width: 1100px; margin: auto; padding: 40px; background: rgba(0,0,0,0.45); border-radius: 20px; box-shadow: 0 0 20px #000; text-align: center; }
+/* ================= NAV ================= */
 nav {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    z-index: 50;
-    padding: 12px 0;
+    position: fixed; top: 0; width: 100%; z-index: 50; padding: 12px 0;
     backdrop-filter: blur(10px);
     background: rgba(255, 255, 255, 0.12);
     border-bottom: 2px solid rgba(255, 215, 0, 0.4);
-    display: flex;
-    justify-content: center;
-    gap: 40px;
+    display: flex; justify-content: center; gap: 40px;
 }
-
 nav a {
-    font-size: 1.3rem;
-    padding: 8px 18px;
-    color: gold;
-    text-decoration: none;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: 0.25s;
+    font-size: 1.3rem; padding: 8px 18px; color: gold;
+    text-decoration: none; font-weight: 600; border-radius: 10px; transition: 0.25s;
 }
-
-nav a.unlocked:hover {
-    background: rgba(255, 215, 0, 0.3);
-    transform: scale(1.1);
-    color: white;
-}
-
-nav a.locked {
-    opacity: 0.45;
-    cursor: not-allowed;
-}
-
-/****************************************************
- 3D GAME TILE GRID
-****************************************************/
+nav a.unlocked:hover { background: rgba(255, 215, 0, 0.3); transform: scale(1.1); color: white; }
+nav a.locked { opacity: 0.45; cursor: not-allowed; }
+/* ================= TILES ================= */
 .game-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 25px;
     margin-top: 30px;
 }
-
 .tile {
     background: rgba(0,0,0,0.55);
     border: 2px solid gold;
@@ -102,90 +52,41 @@ nav a.locked {
     transition: 0.3s;
     transform-style: preserve-3d;
 }
-
-.tile:hover {
-    transform: translateY(-10px) scale(1.05);
-    box-shadow: 0 12px 25px rgba(255,215,0,0.6);
-}
-
-.tile.locked {
-    filter: grayscale(80%);
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.tile h3 {
-    margin-top: 15px;
-    font-size: 1.4rem;
-}
-
-.check {
-    font-size: 1.6rem;
-    color: lime;
-    margin-top: 10px;
-}
-
-/****************************************************
- UNLOCK PANEL
-****************************************************/
+.tile:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 12px 25px rgba(255,215,0,0.6); }
+.tile.locked { filter: grayscale(80%); opacity: 0.5; cursor: not-allowed; }
+.tile h3 { margin-top: 15px; font-size: 1.4rem; }
+.check { font-size: 1.6rem; color: lime; margin-top: 10px; }
+/* ================= UNLOCK PANEL ================= */
 .unlock-panel {
-    margin-top: 50px;
-    padding: 25px;
-    background: rgba(255,255,255,0.12);
-    border-radius: 15px;
-    border: 2px solid gold;
-    backdrop-filter: blur(5px);
+    margin-top: 50px; padding: 25px; background: rgba(255,255,255,0.12);
+    border-radius: 15px; border: 2px solid gold; backdrop-filter: blur(5px);
 }
-
-.unlock-panel input {
-    padding: 12px;
-    font-size: 1.2rem;
-    width: 200px;
-    border: 2px solid gold;
-    border-radius: 10px;
-}
-
-.button {
-    padding: 12px 25px;
-    border: 2px solid gold;
-    background: linear-gradient(45deg, #ff3232, #b20000);
-    border-radius: 10px;
-    font-size: 1.2rem;
-    color: white;
-    cursor: pointer;
-}
-.button:hover {
-    transform: scale(1.1);
-}
-
-/****************************************************
- MATCHING GAME
-****************************************************/
+.unlock-panel input { padding: 12px; font-size: 1.2rem; width: 200px; border: 2px solid gold; border-radius: 10px; }
+.button { padding: 12px 25px; border: 2px solid gold; background: linear-gradient(45deg, #ff3232, #b20000); border-radius: 10px; font-size: 1.2rem; color: white; cursor: pointer; }
+.button:hover { transform: scale(1.1); }
+/* ================= MATCHING GAME ================= */
 #game-board {
     display: grid;
     grid-template-columns: repeat(4, 90px);
     gap: 12px;
     justify-content: center;
+    margin-bottom: 20px;
 }
 .card {
-    width: 90px;
-    height: 90px;
-    background: #700000;
-    border-radius: 10px;
-    border: 3px solid gold;
-    font-size: 2rem;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    width: 90px; height: 90px;
+    background: #700000; border-radius: 10px;
+    border: 3px solid gold; font-size: 2rem;
+    display:flex; justify-content:center; align-items:center;
     cursor:pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
+.card.matched { background: limegreen; color: black; transform: scale(1.05); }
+#timer { font-size: 1.5rem; margin-bottom: 10px; }
 </style>
 </head>
 <body>
 
-<!-- =======================================================
-     NAVIGATION BAR
-=========================================================== -->
+<!-- NAVIGATION -->
 <nav>
     <a onclick="showScreen('home')" class="unlocked">Home</a>
     <a id="nav-level1" class="unlocked" onclick="showScreen('level1')">Level 1</a>
@@ -195,9 +96,7 @@ nav a.locked {
     <a id="nav-final" class="locked">Final 🔒</a>
 </nav>
 
-<!-- =======================================================
-     HOME
-=========================================================== -->
+<!-- HOME -->
 <div id="home" class="screen active">
     <div class="container">
         <h1>🎄 Christmas Adventure 🎁</h1>
@@ -205,92 +104,49 @@ nav a.locked {
     </div>
 </div>
 
-<!-- =======================================================
-     LEVEL 1
-=========================================================== -->
+<!-- LEVEL 1 -->
 <div id="level1" class="screen">
     <div class="container">
         <h1>Level 1 — Mini Games</h1>
-
         <div class="game-grid">
-
-            <div class="tile locked">
-                <h3>Connect 4</h3>
-                <p>(Coming Soon)</p>
-                <span id="level1-Connect4" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Tic Tac Toe</h3>
-                <p>(Coming Soon)</p>
-                <span id="level1-TicTacToe" class="check"></span>
-            </div>
-
             <div class="tile" onclick="showScreen('matching')">
                 <h3>Matching Pictures</h3>
                 <p>Find all the pairs!</p>
                 <span id="level1-Matching" class="check"></span>
             </div>
-
+            <div class="tile locked"><h3>Connect 4</h3><p>(Coming Soon)</p><span id="level1-Connect4" class="check"></span></div>
+            <div class="tile locked"><h3>Tic Tac Toe</h3><p>(Coming Soon)</p><span id="level1-TicTacToe" class="check"></span></div>
         </div>
-
         <div class="unlock-panel">
             <h2>Unlock Level 2</h2>
             <input id="pw-level1" placeholder="A7B4C9">
             <button class="button" onclick="enterPassword(1)">Unlock</button>
         </div>
-
         <button class="button" onclick="resetProgress()" style="margin-top:30px;">Reset All Progress</button>
     </div>
 </div>
 
-<!-- =======================================================
-     MATCHING GAME
-=========================================================== -->
+<!-- MATCHING GAME -->
 <div id="matching" class="screen">
     <div class="container">
         <h1>🎄 Matching Game</h1>
         <p>Match all pairs to complete this game!</p>
-
+        <div id="timer">⏳ 180</div>
         <div id="game-board"></div>
-
-        <h2 id="matching-code" style="display:none;color:gold;">
-            🎉 Game Complete!
-        </h2>
-
+        <h2 id="matching-code" style="display:none;color:gold;">🎉 Game Complete!</h2>
         <button class="button" onclick="showScreen('level1')">Back</button>
     </div>
 </div>
 
-<!-- =======================================================
-     LEVEL 2
-=========================================================== -->
+<!-- LEVEL 2 -->
 <div id="level2" class="screen">
     <div class="container">
         <h1>Level 2 — Tests</h1>
-
         <div class="game-grid">
-
-            <div class="tile locked">
-                <h3>Multiple Choice Test</h3>
-                <p>(Coming Soon)</p>
-                <span id="level2-MCTest" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Bad Lip Reading</h3>
-                <p>(Coming Soon)</p>
-                <span id="level2-BadLip" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Chump 2028</h3>
-                <p>(Coming Soon)</p>
-                <span id="level2-Chump2028" class="check"></span>
-            </div>
-
+            <div class="tile locked"><h3>Multiple Choice Test</h3><p>(Coming Soon)</p><span id="level2-MCTest" class="check"></span></div>
+            <div class="tile locked"><h3>Bad Lip Reading</h3><p>(Coming Soon)</p><span id="level2-BadLip" class="check"></span></div>
+            <div class="tile locked"><h3>Chump 2028</h3><p>(Coming Soon)</p><span id="level2-Chump2028" class="check"></span></div>
         </div>
-
         <div class="unlock-panel">
             <h2>Unlock Level 3</h2>
             <input id="pw-level2" placeholder="MERRY22">
@@ -299,35 +155,15 @@ nav a.locked {
     </div>
 </div>
 
-<!-- =======================================================
-     LEVEL 3
-=========================================================== -->
+<!-- LEVEL 3 -->
 <div id="level3" class="screen">
     <div class="container">
         <h1>Level 3 — Adventures</h1>
-
         <div class="game-grid">
-
-            <div class="tile locked">
-                <h3>Tony-Man</h3>
-                <p>(Coming Soon)</p>
-                <span id="level3-TonyMan" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Detective MaryAnne</h3>
-                <p>(Coming Soon)</p>
-                <span id="level3-MaryAnne" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Pea & Balloony</h3>
-                <p>(Coming Soon)</p>
-                <span id="level3-PeaBalloony" class="check"></span>
-            </div>
-
+            <div class="tile locked"><h3>Tony-Man</h3><p>(Coming Soon)</p><span id="level3-TonyMan" class="check"></span></div>
+            <div class="tile locked"><h3>Detective MaryAnne</h3><p>(Coming Soon)</p><span id="level3-MaryAnne" class="check"></span></div>
+            <div class="tile locked"><h3>Pea & Balloony</h3><p>(Coming Soon)</p><span id="level3-PeaBalloony" class="check"></span></div>
         </div>
-
         <div class="unlock-panel">
             <h2>Unlock Level 4</h2>
             <input id="pw-level3" placeholder="SANTA33">
@@ -336,35 +172,15 @@ nav a.locked {
     </div>
 </div>
 
-<!-- =======================================================
-     LEVEL 4
-=========================================================== -->
+<!-- LEVEL 4 -->
 <div id="level4" class="screen">
     <div class="container">
         <h1>Level 4 — Final Trials</h1>
-
         <div class="game-grid">
-
-            <div class="tile locked">
-                <h3>The Dasinator 3D</h3>
-                <p>(Coming Soon)</p>
-                <span id="level4-Dasinator" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Escape the Maze</h3>
-                <p>(Coming Soon)</p>
-                <span id="level4-Maze" class="check"></span>
-            </div>
-
-            <div class="tile locked">
-                <h3>Where’s Daisy?</h3>
-                <p>(Coming Soon)</p>
-                <span id="level4-Daisy" class="check"></span>
-            </div>
-
+            <div class="tile locked"><h3>The Dasinator 3D</h3><p>(Coming Soon)</p><span id="level4-Dasinator" class="check"></span></div>
+            <div class="tile locked"><h3>Escape the Maze</h3><p>(Coming Soon)</p><span id="level4-Maze" class="check"></span></div>
+            <div class="tile locked"><h3>Where’s Daisy?</h3><p>(Coming Soon)</p><span id="level4-Daisy" class="check"></span></div>
         </div>
-
         <div class="unlock-panel">
             <h2>Unlock Final Stage</h2>
             <input id="pw-level4" placeholder="FINAL2025">
@@ -373,120 +189,43 @@ nav a.locked {
     </div>
 </div>
 
-<!-- =======================================================
-     FINAL PAGE
-=========================================================== -->
+<!-- FINAL PAGE -->
 <div id="final" class="screen">
     <div class="container">
         <h1>🎥 Final Reward</h1>
         <p>Enjoy your secret video!</p>
-
         <video width="700" controls>
             <source src="secretvideo.mp4">
         </video>
-
         <br><br>
         <button class="button" onclick="showScreen('home')">Back to Home</button>
     </div>
 </div>
 
-<!-- =======================================================
-     JAVASCRIPT
-=========================================================== -->
+<!-- JAVASCRIPT -->
 <script>
-let LEVEL_PASSWORDS = {
-    1:"A7B4C9",
-    2:"MERRY22",
-    3:"SANTA33",
-    4:"FINAL2025"
-};
-
-let levels = JSON.parse(localStorage.getItem("progress")) || {
-    level1:{completed:{}},
-    level2:{completed:{}},
-    level3:{completed:{}},
-    level4:{completed:{}},
-    unlockedLevels:{1:true,2:false,3:false,4:false,final:false}
-};
-
+let LEVEL_PASSWORDS = {1:"A7B4C9",2:"MERRY22",3:"SANTA33",4:"FINAL2025"};
+let levels = JSON.parse(localStorage.getItem("progress")) || {level1:{completed:{}},level2:{completed:{}},level3:{completed:{}},level4:{completed:{}},unlockedLevels:{1:true,2:false,3:false,4:false,final:false}};
 function save(){ localStorage.setItem("progress", JSON.stringify(levels)); }
+function resetProgress(){ if(confirm("Reset ALL progress?")){ localStorage.removeItem("progress"); location.reload(); } }
+function showScreen(id){ document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active")); document.getElementById(id).classList.add("active"); if(id==="matching") buildMemory(); }
+function enterPassword(level){ let input=document.getElementById(`pw-level${level}`).value.trim(); if(input===LEVEL_PASSWORDS[level]){ alert("Level unlocked!"); let next=level+1; if(next<=4){ levels.unlockedLevels[next]=true; unlockNav(next); } else{ levels.unlockedLevels.final=true; unlockNav("final"); } save(); updateUI(); } else{ alert("Incorrect password."); } }
+function unlockNav(n){ let id=typeof n==="number"?`nav-level${n}`:"nav-final"; let el=document.getElementById(id); el.classList.remove("locked"); el.classList.add("unlocked"); el.textContent=el.textContent.replace("🔒",""); el.onclick=()=>showScreen(id.replace("nav-","")); }
+function updateUI(){ for(let L=2;L<=4;L++){ if(levels.unlockedLevels[L]) unlockNav(L);} if(levels.unlockedLevels.final) unlockNav("final"); for(let L in levels){ if(L.startsWith("level")){ for(const G in levels[L].completed){ let el=document.getElementById(`${L}-${G}`); if(el) el.textContent="✔";}}}} updateUI();
 
-function resetProgress(){
-    if(confirm("Reset ALL progress?")){
-        localStorage.removeItem("progress");
-        location.reload();
-    }
-}
-
-function showScreen(id){
-    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-
-    if(id === "matching") buildMemory();
-}
-
-function enterPassword(level){
-    let input = document.getElementById(`pw-level${level}`).value.trim();
-    if(input === LEVEL_PASSWORDS[level]){
-        alert("Level unlocked!");
-
-        let next = level + 1;
-        if(next <= 4){
-            levels.unlockedLevels[next] = true;
-            unlockNav(next);
-        } else {
-            levels.unlockedLevels.final = true;
-            unlockNav("final");
-        }
-
-        save();
-        updateUI();
-    } else {
-        alert("Incorrect password.");
-    }
-}
-
-function unlockNav(n){
-    let id = typeof n === "number" ? `nav-level${n}` : "nav-final";
-    let el = document.getElementById(id);
-
-    el.classList.remove("locked");
-    el.classList.add("unlocked");
-    el.textContent = el.textContent.replace("🔒","");
-    el.onclick = () => showScreen(id.replace("nav-",""));
-}
-
-function updateUI(){
-    for(let L=2; L<=4; L++){
-        if(levels.unlockedLevels[L]) unlockNav(L);
-    }
-    if(levels.unlockedLevels.final) unlockNav("final");
-
-    for(let L in levels){
-        if(L.startsWith("level")){
-            for(const G in levels[L].completed){
-                let el = document.getElementById(`${L}-${G}`);
-                if(el) el.textContent = "✔";
-            }
-        }
-    }
-}
-updateUI();
-
+/* ===== MATCHING GAME ===== */
 let symbols=["🎄","🎄","⭐","⭐","🎁","🎁","⛄","⛄"];
-let first=null,lock=false,found=0;
+let first=null, lock=false, found=0, timer=null, timeLeft=180;
 
 function buildMemory(){
     const board=document.getElementById("game-board");
     board.innerHTML="";
-    first=null; lock=false; found=0;
+    first=null; lock=false; found=0; timeLeft=180;
     document.getElementById("matching-code").style.display="none";
+    clearInterval(timer); startTimer();
 
     let s=[...symbols];
-    for(let i=s.length-1;i>0;i--){
-        let j=Math.floor(Math.random()*(i+1));
-        [s[i],s[j]]=[s[j],s[i]];
-    }
+    for(let i=s.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [s[i],s[j]]=[s[j],s[i]]; }
 
     s.forEach(sym=>{
         let c=document.createElement("div");
@@ -494,35 +233,36 @@ function buildMemory(){
         c.dataset.symbol=sym;
 
         c.onclick=()=>{
-            if(lock || c.innerText) return;
+            if(lock || c.classList.contains("matched") || c===first) return;
 
             c.innerText=sym;
 
-            if(!first){
-                first=c;
-            } else {
+            if(!first){ first=c; } 
+            else{
                 if(first.dataset.symbol===sym){
-                    first=null;
-                    found++;
-                    if(found===4){
+                    first.classList.add("matched"); c.classList.add("matched"); first=null; found++;
+                    if(found===symbols.length/2){
+                        clearInterval(timer);
+                        document.querySelectorAll(".card").forEach(card=>card.classList.add("matched"));
                         document.getElementById("matching-code").style.display="block";
-                        levels.level1.completed["Matching"] = true;
-                        save();
-                        updateUI();
+                        levels.level1.completed["Matching"]=true; save(); updateUI();
                     }
-                } else {
+                }else{
                     lock=true;
-                    setTimeout(()=>{
-                        first.innerText="";
-                        c.innerText="";
-                        first=null;
-                        lock=false;
-                    },700);
+                    setTimeout(()=>{ first.innerText=""; c.innerText=""; first=null; lock=false; },700);
                 }
             }
         };
         board.appendChild(c);
     });
+}
+
+function startTimer(){
+    const t=document.getElementById("timer"); t.textContent="⏳ "+timeLeft;
+    timer=setInterval(()=>{
+        timeLeft--; t.textContent="⏳ "+timeLeft;
+        if(timeLeft<=0){ clearInterval(timer); alert("❌ Time's up! Try again!"); buildMemory(); }
+    },1000);
 }
 </script>
 
