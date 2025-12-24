@@ -112,27 +112,27 @@ canvas { display:block; }
 <script>
 // ================= ASSETS =================
 const imgHealth = new Image();
-imgHealth.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Screenshot 2025-12-14 235346.png";
+imgHealth.src = "Connect4/Screenshot 2025-12-14 235346.png";
 
 const imgAmmo = new Image();
-imgAmmo.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Screenshot 2025-12-14 235612.png";
+imgAmmo.src = "Connect4/Screenshot 2025-12-14 235612.png";
 
 // Enemy (normal robot)
 const imgEnemy = new Image();
-imgEnemy.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Robot Guard.jpeg";
+imgEnemy.src = "Connect4/Robot Guard.jpeg";
 
 // Mini Boss
 const imgBoss = new Image();
-imgBoss.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Robot Boss.jpeg";
+imgBoss.src = "Connect4/Robot Boss.jpeg";
 
 const imgShip = new Image();
-imgShip.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/spaceship.jpg";
+imgShip.src = "Connect4_4/spaceship.jpg";
 
 const imgKey = new Image();
-imgKey.src = "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/car keys.jpg";
+imgKey.src = "Connect4/car keys.jpg";
 
 
-const bgMusic = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/ytmp3free.cc_ratchet-clank-3-up-your-arsenal-mylon-command-center-youtubemp3free.org.mp3");
+const bgMusic = new Audio("Connect4_2/ytmp3free.cc_ratchet-clank-3-up-your-arsenal-mylon-command-center-youtubemp3free.org.mp3");
 bgMusic.loop = true;
 
 const FORCE_VISIBLE_DIST = 0.8; // tiles; tweak 0.6–1.0
@@ -155,46 +155,46 @@ startBtn.onclick = () => {
 };
 
 // ================= SOUND EFFECTS =================
-const playerGunSound = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Desertgun.mp3");
+const playerGunSound = new Audio("Connect4/Desertgun.mp3");
 playerGunSound.volume = 0.6;
 
-const enemyGunSound = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/RifleSound.mp3");
+const enemyGunSound = new Audio("Connect4/RifleSound.mp3");
 enemyGunSound.volume = 0.25;
 
 const ammoPickupSound = new Audio(
-    "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/ytmp3free.cc_picking-up-an-object-sound-effect-block-city-wars-youtubemp3free.org.mp3"
+    "Connect4/ytmp3free.cc_picking-up-an-object-sound-effect-block-city-wars-youtubemp3free.org.mp3"
 );
 ammoPickupSound.volume = 0.55;
 
 const healthPickupSound = new Audio(
-    "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3"
+    "Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3"
 );
 healthPickupSound.volume = 0.6;
 
 const enemyHitSound = new Audio(
-    "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/MetalHit.mp3"
+    "Connect4/MetalHit.mp3"
 );
 enemyHitSound.volume = 0.5;
 
 const enemyDeathSound = new Audio(
-    "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/RobotDeath.mp3"
+    "Connect4/RobotDeath.mp3"
 );
 enemyDeathSound.volume = 0.90;
 
 const enemyExplosionSound = new Audio(
-    "file:///C:/Users/anthp/OneDrive/Desktop/Connect4/RobotExplosion.mp3"
+    "Connect4/RobotExplosion.mp3"
 );
 enemyExplosionSound.volume = 0.65;
 
-const miniBossGunSound = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/TurrentGun.mp3");
+const miniBossGunSound = new Audio("Connect4/TurrentGun.mp3");
 miniBossGunSound.preload = "auto";
 miniBossGunSound.loop = true;
 miniBossGunSound.volume = 0.85;
 
-const keyPickupSound = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Car Keys.mp3");
+const keyPickupSound = new Audio("Connect4/Car Keys.mp3");
 keyPickupSound.volume = 0.75;
 
-const spaceshipEngineSound = new Audio("file:///C:/Users/anthp/OneDrive/Desktop/Connect4/Spaceship engine start up I Sound Effect (HQ) (3).mp3");
+const spaceshipEngineSound = new Audio("Connect4/Spaceship engine start up I Sound Effect (HQ) (3).mp3");
 spaceshipEngineSound.volume = 0.7; // adjust volume if needed
 
 
@@ -1501,3 +1501,4 @@ loop();
 </script>
 </body>
 </html>
+
