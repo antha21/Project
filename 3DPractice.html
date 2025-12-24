@@ -219,42 +219,42 @@ button:hover {
 
 <!-- --- Audio --- -->
 <audio id="bgMusic" loop>
-    <source src="C:\Users\anthp\OneDrive\Desktop\Connect4\Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg">
+    <source src="Connect4_3\Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="shootSound">
-    <source src="C:\Users\anthp\OneDrive\Desktop\Connect4\ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg">
+    <source src="Connect4\ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg">
 </audio>
 <audio id="enemyGunSound">
     <source src="Magnum 44 sound.mp4" type="audio/mp4">
 </audio>
 
 <audio id="itemPickupSound">
-    <source src="C:/Users/anthp/OneDrive/Desktop/Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3" type="audio/mpeg">
+    <source src="Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="sndRevolver">
-    <source src="C:\Users\anthp\OneDrive\Desktop\Connect4\RevolverSound.mp3" type="audio/mpeg">
+    <source src="Connect4\RevolverSound.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="sndShotgun">
-    <source src="C:/Users/anthp/OneDrive/Desktop/Connect4/ShotGunShellsOST.mp3" type="audio/mpeg">
+    <source src="Connect4/ShotGunShellsOST.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="sndTommy">
-    <source src="C:/Users/anthp/OneDrive/Desktop/Connect4/TommyGunOST.mp3" type="audio/mpeg">
+    <source src="Connect4/TommyGunOST.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="sndTurret">
-    <source src="C:/Users/anthp/OneDrive/Desktop/Connect4/TurretGunOST.mp3" type="audio/mpeg">
+    <source src="Connect4/TurretGunOST.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="carEscapeSound">
-    <source src="C:/Users/anthp/OneDrive/Desktop/Connect4/Starting Car and Driving Off  Sound Effect for editing.mp3" type="audio/mpeg">
+    <source src="Connect4/Starting Car and Driving Off  Sound Effect for editing.mp3" type="audio/mpeg">
 </audio>
 
 <audio id="menuMusic" loop>
-    <source src="Love Theme From The Godfather.mp3" type="audio/mpeg">
+    <source src="Connect4_4/Love Theme From The Godfather.mp3" type="audio/mpeg">
 </audio>
 
 
@@ -424,33 +424,33 @@ startBtn.addEventListener("click", () => {
 <!-- ---Images --- -->
 // Load health pack image
 const healthPackImg = new Image();
-healthPackImg.src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Screenshot 2025-12-17 150054.png";
+healthPackImg.src = "Connect4_2/Screenshot 2025-12-17 150054.png";
 
 // Load health pickup sound
-const healthPickupSound = new Audio("C:/Users/anthp/OneDrive/Desktop/Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3");
+const healthPickupSound = new Audio("Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3");
 
 // ========================
 // Player Face Images
 // ========================
 const faceIdle = new Image();
-faceIdle.src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Chump1.jpg";
+faceIdle.src = "Connect4/Chump1.jpg";
 
 const faceFire = new Image();
-faceFire.src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Chump2.jpg";
+faceFire.src = "Connect4/Chump2.jpg";
 
 // --- Preload car image ---
 const carImg = new Image();
-carImg.src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Car.jpg";
+carImg.src = "Connect4_2/Car.jpg";
 
 // ========================
 // 1-UP Collectible
 // ========================
 const oneUpImg = new Image();
-oneUpImg.src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Screenshot_20250615_162031_Snapchat.jpg";
+oneUpImg.src = "Connect4_4/Screenshot_20250615_162031_Snapchat.jpg";
 
 // Optional sound (reuse pickup sound if you want)
 const oneUpSound = new Audio(
-    "C:/Users/anthp/OneDrive/Desktop/Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3"
+    "Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3"
 );
 oneUpSound.volume = 0.8;
 
@@ -568,12 +568,12 @@ const objectImages = [
     new Image()
 ];
 
-objectImages[0].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (5).jpg";
-objectImages[1].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (6).jpg";
-objectImages[2].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (1).jpg";
-objectImages[3].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (2).jpg";
-objectImages[4].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (3).jpg";
-objectImages[5].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (4).jpg";
+objectImages[0].src = "Connect4_2/Object1 (5).jpg";
+objectImages[1].src = "Connect4/Object1 (6).jpg";
+objectImages[2].src = "Connect4_2/Object1 (1).jpg";
+objectImages[3].src = "Connect4_2/Object1 (2).jpg";
+objectImages[4].src = "Connect4_2/Object1 (3).jpg";
+objectImages[5].src = "Connect4_2/Object1 (4).jpg";
 
 
 
@@ -582,7 +582,7 @@ objectImages[5].src = "C:/Users/anthp/OneDrive/Desktop/Connect4/Object1 (4).jpg"
 // ========================
 const ENEMY_TYPES = {
     revolver: {
-        sprite: "C:/Users/anthp/OneDrive/Desktop/Connect4/copilot_image_1766009412260.jpeg",
+        sprite: "Connect4/copilot_image_1766009412260.jpeg",
         health: 100,
         moveSpeed: 0.03,
         idleSpeed: 0.015,
@@ -597,7 +597,7 @@ const ENEMY_TYPES = {
     },
 
     turret: {
-        sprite: "C:/Users/anthp/OneDrive/Desktop/Connect4/copilot_image_1766009643966.jpeg",
+        sprite: "Connect4_4/copilot_image_1766009643966.jpeg",
         health: 220,
         moveSpeed: 0,
         idleSpeed: 0,
@@ -611,7 +611,7 @@ const ENEMY_TYPES = {
     },
 
     tommy: {
-        sprite: "C:/Users/anthp/OneDrive/Desktop/Connect4/copilot_image_1766008655046.jpeg",
+        sprite: "Connect4_2/copilot_image_1766008655046.jpeg",
         health: 140,
         moveSpeed: 0.02,
         idleSpeed: 0.01,
@@ -626,7 +626,7 @@ const ENEMY_TYPES = {
     },
 
     shotgun: {
-        sprite: "C:/Users/anthp/OneDrive/Desktop/Connect4/copilot_image_1766009225786.jpeg",
+        sprite: "Connect4_2/copilot_image_1766009225786.jpeg",
         health: 160,
         moveSpeed: 0.03,
         idleSpeed: 0.015,
@@ -1998,3 +1998,4 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !gameStarted){
 </script>
 </body>
 </html>
+
