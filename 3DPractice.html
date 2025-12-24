@@ -337,13 +337,13 @@ const viewHeight = canvas.height - STATUS_BAR_HEIGHT;
 const STRAFE_FACTOR = 0.45; // 0.5–0.7 feels good
 
 // ===== Voice / FX Sounds =====
-const sndTommyTalk   = new Audio("TommyTalk.mp3");
-const sndTurretLaugh = new Audio("TurrentLaugh.mp3");
-const sndTurretDeath = new Audio("TurretDeath.mp3");
+const sndTommyTalk   = new Audio("Connect4/TommyTalk.mp3");
+const sndTurretLaugh = new Audio("Connect4/TurrentLaugh.mp3");
+const sndTurretDeath = new Audio("Connect4/TurretDeath.mp3");
 
-const sndDirectHit   = new Audio("DirectHit.mp3");
-const sndRevolverTalk= new Audio("RevolverTalk.mp3");
-const sndRobotDeath  = new Audio("RobotDeath.mp3");
+const sndDirectHit   = new Audio("Connect4/DirectHit.mp3");
+const sndRevolverTalk= new Audio("Connect4/RevolverTalk.mp3");
+const sndRobotDeath  = new Audio("Connect4/RobotDeath.mp3");
 
 // Volumes (adjust freely)
 sndTommyTalk.volume    = 1.0;
@@ -572,8 +572,8 @@ objectImages[0].src = "Connect4_2/Object1 (5).jpg";
 objectImages[1].src = "Connect4/Object1 (6).jpg";
 objectImages[2].src = "Connect4_2/Object1 (1).jpg";
 objectImages[3].src = "Connect4_2/Object1 (2).jpg";
-objectImages[4].src = "Connect4_2/Object1 (3).jpg";
-objectImages[5].src = "Connect4_2/Object1 (4).jpg";
+objectImages[4].src = "Connect4_4/Object1 (3).jpg";
+objectImages[5].src = "Connect4_4/Object1 (4).jpg";
 
 
 
@@ -1998,4 +1998,5 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !gameStarted){
 </script>
 </body>
 </html>
+
 
