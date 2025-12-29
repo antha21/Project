@@ -882,29 +882,25 @@ function createPlayer() {
 
 
 // ========================
-// Wall Textures
+// Wall Textures (Solid Colors)
 // ========================
-function makeTexture(c1, c2){
+function makeTexture(color){
     let cnv = document.createElement("canvas"); 
     cnv.width = cnv.height = 32;
     let cctx = cnv.getContext("2d");
-    cctx.fillStyle = c1; 
+
+    cctx.fillStyle = color;
     cctx.fillRect(0, 0, 32, 32);
-    cctx.strokeStyle = c2; 
-    cctx.lineWidth = 4;
-    for(let x = 0; x < 32; x += 8){ 
-        cctx.beginPath(); 
-        cctx.moveTo(x, 0); 
-        cctx.lineTo(32, 32 - x); 
-        cctx.stroke(); 
-    }
+
     return ctx.createPattern(cnv, "repeat");
 }
+
 const wallTextures = [
-    makeTexture("#334", "#556"),
-    makeTexture("#552", "#aa4"),
-    makeTexture("#400", "#a00")
+    makeTexture("#2f3440"), // soft dark blue-gray
+    makeTexture("#5a5238"), // muted brown
+    makeTexture("#4a2a2a")  // soft dark red
 ];
+
 
 // ------Pausing----------
 
@@ -1998,6 +1994,7 @@ document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !gameStarted){
 </script>
 </body>
 </html>
+
 
 
 
