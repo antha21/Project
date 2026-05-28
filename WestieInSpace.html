@@ -49,28 +49,47 @@
         z-index: 20; color: #7df9ff;
     }
     
-    /* Splash Screen */
     #splashScreen { background: #000; z-index: 30; transition: opacity 1s ease; }
     .fade-text {
         font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards;
         text-shadow: 0 0 15px #7df9ff; letter-spacing: 5px; text-transform: uppercase;
     }
 
-    /* Standard Menu Background */
+    /* Animated Menu Background */
+    @keyframes bgPan {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
     .menu-bg {
         background: linear-gradient(to bottom, rgba(0,5,20,0.85), rgba(0,10,40,0.95)), url("Connect4/SpaceB.jpg") no-repeat center center;
-        background-size: cover; display: none; backdrop-filter: blur(5px);
+        background-size: 150% 150%; display: none; backdrop-filter: blur(5px);
+        animation: bgPan 30s linear infinite;
     }
 
+    /* Title Animations */
+    @keyframes titleDrop {
+        0% { transform: translateY(-100px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
     #titleScreen h1 {
         font-size: 70px; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 2px;
         text-shadow: 0 0 10px #00ffff, 0 0 30px #0088ff; margin-top: -50px;
+        animation: titleDrop 1.2s cubic-bezier(0.2, 1, 0.3, 1) forwards;
     }
     
     #howToScreen h1 { font-size: 50px; margin-bottom: 30px; text-shadow: 0 0 15px #00ffff; }
 
-    /* Buttons */
-    .menu-buttons { display:flex; flex-direction:column; gap:20px; width: 300px; }
+    /* Button Animations */
+    @keyframes buttonsSlideUp {
+        0% { transform: translateY(40px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    .menu-buttons { 
+        display:flex; flex-direction:column; gap:20px; width: 300px;
+        opacity: 0; animation: buttonsSlideUp 1s ease forwards; animation-delay: 0.5s;
+    }
+    
     button {
         font-family: 'Consolas', monospace; font-size: 22px; padding: 15px;
         background: rgba(0, 20, 40, 0.6); border: 1px solid #00ffff; color: #00ffff;
@@ -79,10 +98,8 @@
     }
     button:hover { background: rgba(0, 255, 255, 0.2); box-shadow: 0 0 15px rgba(0, 255, 255, 0.6); transform: scale(1.02); }
 
-    /* Pause Menu (Translucent Overlay) */
-    #pauseScreen {
-        background: rgba(0, 5, 15, 0.85); display: none; z-index: 25; backdrop-filter: blur(4px);
-    }
+    /* Pause Menu */
+    #pauseScreen { background: rgba(0, 5, 15, 0.85); display: none; z-index: 25; backdrop-filter: blur(4px); }
     #pauseScreen h1 { font-size: 60px; color: #fff; text-shadow: 0 0 20px #fff; margin-bottom: 40px; letter-spacing: 4px; }
 
     /* Instructions Panel */
@@ -93,18 +110,14 @@
     }
     .instructions span { color: #fff; font-weight: bold; }
 
-    @keyframes splashFade {
-        0% { opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { opacity: 0; }
-    }
+    @keyframes splashFade { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 </style>
 </head>
 <body>
 
 <canvas id="game"></canvas>
 
+<!-- HUD Elements -->
 <div id="hud"></div>
 <div id="objectives"></div>
 <div id="msg"></div>
@@ -114,10 +127,12 @@
     <div class="ch-part ch-center"></div>
 </div>
 
+<!-- Intro Splash -->
 <div id="splashScreen" class="screen">
     <h1 class="fade-text">DeShrimpo Games Presents</h1>
 </div>
 
+<!-- Title Screen -->
 <div id="titleScreen" class="screen menu-bg">
     <h1>The Space Escape 3D</h1>
     <div class="menu-buttons">
@@ -126,6 +141,7 @@
     </div>
 </div>
 
+<!-- How To Play -->
 <div id="howToScreen" class="screen menu-bg">
     <h1>HOW TO PLAY</h1>
     <div class="instructions">
@@ -139,9 +155,10 @@
     <button id="backBtn" style="width: 300px;">BACK TO MENU</button>
 </div>
 
+<!-- Pause Menu -->
 <div id="pauseScreen" class="screen">
     <h1>GAME PAUSED</h1>
-    <div class="menu-buttons">
+    <div class="menu-buttons" style="opacity:1; animation:none;">
         <button id="resumeBtn">RESUME</button>
         <button id="restartBtn">RESTART LEVEL</button>
         <button id="quitBtn">QUIT TO MENU</button>
@@ -171,6 +188,7 @@ const spaceshipEngineSound = new Audio("Connect4/Spaceship engine start up I Sou
 
 // ================= GAME LOGIC / UI CONTROL =================
 let gameStarted = false, paused = false;
+let hasEscaped = false; // Objective tracker
 const FORCE_VISIBLE_DIST = 0.8; 
 
 // Screens
@@ -247,7 +265,13 @@ const map = [
 ];
 const MAP_W = map[0].length, MAP_H = map.length;
 
-let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:8, maxAmmo:10 };
+let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:20, maxAmmo:40 };
+
+// Magazine Logic
+let magSize = 5;
+let currentMag = 5;
+let isReloading = false;
+let reloadTimer = 0;
 
 let enemiesTemplate = [
     {x:9.5, y:1.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:4.5, y:7.5, alive:true, health:100, shootCooldown:0, dir:0},
@@ -280,6 +304,8 @@ let bullets = [], enemyBullets = [];
 document.addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === "p") togglePause();
+    // Manual reload option
+    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused) triggerReload();
     if ((e.code === "Space" || e.key === " ") && canShoot()) shoot();
 });
 
@@ -291,33 +317,43 @@ canvas.onclick = () => {
     else if(canShoot()) shoot();
 };
 
-function canShoot() { return fireCooldown <= 0 && player.ammo > 0 && !paused && gameStarted; }
+function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted; }
 
 function shoot(){
     bullets.push({ x: player.x + Math.cos(player.angle) * 0.3, y: player.y + Math.sin(player.angle) * 0.3, a: player.angle, life: 80 });
     playerGunSound.currentTime = 0; playerGunSound.play();
-    fireCooldown = 20; player.ammo--;
+    fireCooldown = 15; 
+    currentMag--;
+    
+    // Auto Reload when magazine empties
+    if(currentMag === 0 && player.ammo > 0) {
+        triggerReload();
+    }
+}
+
+function triggerReload() {
+    isReloading = true;
+    reloadTimer = 45; // Frames for animation
 }
 
 function isWall(x, y){ let tx = Math.floor(x), ty = Math.floor(y); return map[ty] && map[ty][tx] !== 0; }
 
 function move(){
-    // Standard Mouse Look (Non-inverted)
+    // Standard Mouse Look
     player.angle += mouseDX * 0.002; 
     mouseDX = 0;
     
-    // Backup Arrow Keys Look
     if(keys["arrowleft"]) player.angle -= 0.04;
     if(keys["arrowright"]) player.angle += 0.04;
 
     let c = Math.cos(player.angle), s = Math.sin(player.angle);
     let dx = 0, dy = 0;
 
-    // Standard WASD
+    // Standard WASD mapping
     if(keys["w"] || keys["arrowup"]){ dx += c * player.speed; dy += s * player.speed; }
     if(keys["s"] || keys["arrowdown"]){ dx -= c * player.speed; dy -= s * player.speed; }
-    if(keys["a"]){ dx -= s * player.speed; dy += c * player.speed; }
-    if(keys["d"]){ dx += s * player.speed; dy -= c * player.speed; }
+    if(keys["a"]){ dx += s * player.speed; dy -= c * player.speed; } // Strafe Left (Fixed)
+    if(keys["d"]){ dx -= s * player.speed; dy += c * player.speed; } // Strafe Right (Fixed)
 
     let nx = player.x + dx, ny = player.y + dy;
     if(!isWall(nx, player.y)) player.x = nx;
@@ -325,7 +361,6 @@ function move(){
 }
 
 // ================= UPDATES =================
-// Keep identical bullet update logic from your original code
 function updateBullets(){
     bullets.forEach(b => {
         let nextX = b.x + Math.cos(b.a) * 0.25; let nextY = b.y + Math.sin(b.a) * 0.25;
@@ -357,8 +392,14 @@ function updateBullets(){
     bullets = bullets.filter(b => b.life > 0);
 
     enemyBullets.forEach(b => {
-        b.life--;
-        if(Math.hypot(player.x - b.x, player.y - b.y) < 0.3){
+        // Enemy Bullet Logic: Travel forward towards player
+        let nextX = b.x + Math.cos(b.a) * 0.15; 
+        let nextY = b.y + Math.sin(b.a) * 0.15;
+        
+        if(isWall(nextX, nextY)) b.life = 0; // Break on walls
+        else { b.x = nextX; b.y = nextY; b.life--; }
+        
+        if(b.life > 0 && Math.hypot(player.x - b.x, player.y - b.y) < 0.3){
             player.health -= 10; b.life = 0;
             if(player.health <= 0) resetGame("death");
         }
@@ -421,8 +462,10 @@ function updateItems(){
     });
     ammoPickups.forEach(a => {
         if(!a.taken && Math.hypot(player.x - a.x, player.y - a.y) < 0.5){
-            player.ammo = Math.min(player.ammo + 3, player.maxAmmo); a.taken = true;
+            player.ammo = Math.min(player.ammo + 5, player.maxAmmo); a.taken = true;
             ammoPickupSound.currentTime = 0; ammoPickupSound.play();
+            // Auto reload if ammo was completely empty
+            if(currentMag === 0 && !isReloading) triggerReload();
         }
     });
 }
@@ -432,7 +475,8 @@ function updateSpaceship() {
         const allEnemiesDefeated = enemies.every(e => !e.alive) && !boss.alive;
         if (!spaceship.unlocked) showMessage("SHIP LOCKED – FIND THE KEY");
         else if (!allEnemiesDefeated) showMessage("DEFEAT ALL ENEMIES BEFORE ESCAPING!");
-        else {
+        else if (!hasEscaped) {
+            hasEscaped = true; // Trigger Final Objective checkmark
             showMessage("ESCAPE SUCCESSFUL!", 20000);
             spaceshipEngineSound.currentTime = 0; spaceshipEngineSound.play().catch(()=>{});
             paused = true; bgMusic.pause(); document.exitPointerLock(); hideHUD();
@@ -495,7 +539,6 @@ function cast(){
             let mx = Math.floor(rx), my = Math.floor(ry);
             if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H || map[my][mx] === 1){
                 hit = true;
-                // Side detection for fake normal lighting
                 let remX = rx % 1; let remY = ry % 1;
                 if(remX < 0.05 || remX > 0.95) side = true; 
             }
@@ -518,7 +561,6 @@ function cast(){
     return zBuffer;
 }
 
-// Keep your exact original object rendering logic
 function drawEnemies(zBuffer){
     const w = canvas.width, h = canvas.height;
     const sortedEnemies = enemies.filter(e => e.alive).map(e => ({...e, dist: Math.hypot(e.x - player.x, e.y - player.y)})).sort((a,b) => b.dist - a.dist);
@@ -605,40 +647,79 @@ function drawSpaceship(zBuffer){
     ctx.drawImage(imgShip, sx - sz/2, canvas.height/2 - sz/2, sz, sz); ctx.restore();
 }
 
-// Your Original Bullet Physics exactly
 function drawBullets(zBuffer){
+    // Stabilized Player Bullets
     bullets.forEach(b=>{
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
         let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle;
-        if(Math.abs(ang)<Math.PI/2){
+        ang = Math.atan2(Math.sin(ang), Math.cos(ang)); // Normalization ensures they don't disappear at angles
+        
+        if(Math.abs(ang) < Math.PI/2){
             let sx=canvas.width/2+Math.tan(ang)*canvas.width/2;
             if(sx>=0 && sx<canvas.width && zBuffer[Math.floor(sx)]>dist){
-                let sz=(canvas.height/dist)*0.05;
-                ctx.save(); ctx.shadowBlur=15; ctx.shadowColor="#00ffff"; ctx.fillStyle="#00ffff";
+                let sz=(canvas.height/Math.max(dist, 0.3))*0.05;
+                ctx.save(); ctx.shadowBlur=15; ctx.shadowColor="#00ffff"; ctx.fillStyle="#ffffff";
                 ctx.fillRect(sx-2,canvas.height/2-sz/2,4,sz); ctx.restore();
             }
         }
     });
+
+    // Epic Enemy Plasma Bullets
     enemyBullets.forEach(b => {
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
-        let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
+        let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; 
+        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
         if(Math.abs(ang) > Math.PI/2 + 0.02) return;
-        let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; if(sx < 0 || sx >= canvas.width) return;
+        
+        let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; 
+        if(sx < 0 || sx >= canvas.width) return;
         if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
-        let size = Math.max(canvas.height / Math.max(dist, 0.3) * 0.08, 6);
-        ctx.save(); ctx.shadowBlur = 15; ctx.shadowColor = "red"; ctx.fillStyle = "red";
-        ctx.beginPath(); ctx.arc(sx, canvas.height/2, size, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        
+        let size = Math.max(canvas.height / Math.max(dist, 0.3) * 0.1, 4);
+        let height = size * 3; // Elongated streak shape
+        
+        ctx.save(); 
+        ctx.shadowBlur = 20; ctx.shadowColor = "#cc00ff"; // Purple glow
+        ctx.fillStyle = "#ffffff"; 
+        ctx.fillRect(sx - size/2, canvas.height/2 - height/2, size, height); // Hot core
+        ctx.fillStyle = "#cc00ff";
+        ctx.globalAlpha = 0.6;
+        ctx.fillRect(sx - size, canvas.height/2 - height/2 - size, size*2, height + size*2); // Outer aura
+        ctx.restore();
     });
 }
 
 function drawGun(){
-    const w=canvas.width,h=canvas.height;
-    // Sci-fi gun design
-    ctx.fillStyle="#111"; ctx.fillRect(w/2-18,h-130,36,150); // barrel
-    ctx.fillStyle="#334"; ctx.fillRect(w/2-40,h-190,80,60); // body
-    ctx.fillStyle="#556"; ctx.fillRect(w/2-35,h-215,70,30); // scope base
-    ctx.fillStyle="#0ff"; ctx.fillRect(w/2-4,h-220,8,20); // neon sight
-    if(fireCooldown>16){ ctx.fillStyle="white"; ctx.shadowBlur=20; ctx.shadowColor="cyan"; ctx.beginPath(); ctx.arc(w/2,h-225,15,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0; }
+    const w = canvas.width, h = canvas.height;
+    
+    // Process Reload Animation Math
+    let reloadOffset = 0;
+    let reloadShake = 0;
+    if(isReloading) {
+        let t = reloadTimer / 45; // Goes from 1 down to 0
+        reloadOffset = Math.sin(t * Math.PI) * 150; // Dips down off-screen smoothly
+        reloadShake = Math.sin(reloadTimer * 0.6) * 0.05; // Slight twist during reload
+    }
+
+    ctx.save();
+    // Move canvas origin to the bottom center (pivot point)
+    ctx.translate(w/2, h + reloadOffset);
+    if(isReloading) ctx.rotate(reloadShake);
+
+    // Draw gun relative to pivot (0, 0 is now bottom center of screen + offset)
+    ctx.fillStyle="#111"; ctx.fillRect(-18, -130, 36, 150); // barrel
+    ctx.fillStyle="#334"; ctx.fillRect(-40, -190, 80, 60); // body
+    ctx.fillStyle="#556"; ctx.fillRect(-35, -215, 70, 30); // scope base
+    ctx.fillStyle="#0ff"; ctx.fillRect(-4, -220, 8, 20); // neon sight
+    
+    // Muzzle Flash
+    if(fireCooldown > 12 && !isReloading){ 
+        ctx.fillStyle="white"; ctx.shadowBlur=20; ctx.shadowColor="cyan"; 
+        ctx.beginPath(); ctx.arc(0, -225, 15, 0, Math.PI*2); ctx.fill(); 
+        ctx.shadowBlur=0; 
+    }
+    
+    ctx.restore();
 }
 
 function showMessage(text, duration = 2000) { msg.innerText = text; setTimeout(() => {if(msg.innerText === text) msg.innerText = "";}, duration); }
@@ -649,12 +730,13 @@ function updateObjectivesHUD() {
         <b>MISSION OBJECTIVES</b><br><br>
         <span style="color:${bossKey.collected ? '#00ff00' : '#fff'}">${bossKey.collected ? '✔' : '☐'} Acquire the Key</span><br>
         <span style="color:${allEnemiesDefeated ? '#00ff00' : '#fff'}">${allEnemiesDefeated ? '✔' : '☐'} Eliminate Hostiles</span><br>
-        <span style="color:${(spaceship.unlocked && allEnemiesDefeated) ? '#00ff00' : '#fff'}">${(spaceship.unlocked && allEnemiesDefeated) ? '✔' : '☐'} Evacuate to Ship</span>
+        <span style="color:${hasEscaped ? '#00ff00' : '#fff'}">${hasEscaped ? '✔' : '☐'} Evacuate to Ship</span>
     `;
 }
 
 function resetGame(reason = "death"){
-    player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:8, maxAmmo:10 };
+    player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:20, maxAmmo:40 };
+    currentMag = magSize; isReloading = false; reloadTimer = 0; hasEscaped = false;
     enemies = enemiesTemplate.map(e => ({ ...e }));
     healthPickups.forEach(p => p.taken = false); ammoPickups = [];
     bullets = []; enemyBullets = [];
@@ -670,7 +752,25 @@ function loop(){
     if(!gameStarted || paused) return;
 
     move();
-    if(fireCooldown>0) fireCooldown--;
+    
+    if(fireCooldown > 0) fireCooldown--;
+    
+    // Process Reload Timer
+    if(isReloading) {
+        reloadTimer--;
+        if(reloadTimer <= 0) {
+            isReloading = false;
+            // Refill mag based on remaining ammo pool
+            let needed = magSize;
+            if(player.ammo >= needed) {
+                currentMag = needed;
+                player.ammo -= needed;
+            } else {
+                currentMag = player.ammo;
+                player.ammo = 0;
+            }
+        }
+    }
     
     updateBullets(); updateEnemies(); updateBoss(); updateItems(); updateSpaceship();
     
@@ -681,7 +781,8 @@ function loop(){
     drawBullets(zBuffer); drawGun();
     
     updateObjectivesHUD();
-    hud.innerText = `SHIELD: ${player.health}%  |  AMMO: ${player.ammo}/${player.maxAmmo}`;
+    let ammoDisplay = isReloading ? "RELOADING" : `${currentMag} / ${player.ammo}`;
+    hud.innerText = `SHIELD: ${player.health}%  |  AMMO: ${ammoDisplay}`;
 }
 
 loop();
