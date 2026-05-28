@@ -22,7 +22,7 @@ body::after {
     pointer-events: none; z-index: 5;
 }
 
-/* --- HUD & Messages --- */
+/* --- Messages --- */
 #msg { 
     position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
     color: #f5e1b7; font-family: 'Georgia', serif; font-size: 32px; 
@@ -50,8 +50,8 @@ body::after {
 #initScreen { background: #050201; z-index: 40; cursor: pointer; }
 .pulse-text { font-size: 24px; animation: pulse 2s infinite; letter-spacing: 3px; color: #c99d4d; }
 
-#splashScreen { background: #050201; z-index: 30; display: none; transition: opacity 1.5s ease; }
-.fade-text { font-size: 40px; opacity: 0; animation: splashFade 4.5s ease forwards; letter-spacing: 5px; text-transform: uppercase; text-shadow: 0 0 15px #c99d4d; }
+#splashScreen { background: #050201; z-index: 30; display: none; }
+.fade-text { font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards; letter-spacing: 5px; text-transform: uppercase; text-shadow: 0 0 15px #c99d4d; }
 
 /* Menu Background */
 .menu-bg {
@@ -102,14 +102,17 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
 </head>
 <body>
 
+<!-- Browser Autoplay Bypass Screen -->
 <div id="initScreen" class="screen">
     <div class="pulse-text">CLICK TO ENTER THE FAMILY</div>
 </div>
 
+<!-- Intro Splash -->
 <div id="splashScreen" class="screen">
     <h1 class="fade-text">DeShrimpo Games Presents</h1>
 </div>
 
+<!-- Title Screen -->
 <div id="titleScreen" class="screen menu-bg">
     <div class="menuTitle">The DogMother 3D</div>
     <div class="menuSubtitle">An Offer You Can’t Escape</div>
@@ -119,6 +122,7 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     </div>
 </div>
 
+<!-- How to Play Page -->
 <div id="howToScreen" class="screen menu-bg">
     <h1 style="font-size: 48px; border-bottom: 1px solid #c99d4d; padding-bottom: 10px; margin-bottom:10px;">HOW TO PLAY</h1>
     <div class="instructions">
@@ -133,6 +137,7 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     <button id="backBtn" style="width: 320px;">Return to Menu</button>
 </div>
 
+<!-- Pause Menu -->
 <div id="pauseScreen" class="screen">
     <h1>PAUSED</h1>
     <div class="menu-buttons" style="opacity:1; animation:none;">
@@ -142,10 +147,12 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     </div>
 </div>
 
+<!-- Game Canvas & HUD -->
 <div id="crosshair"></div>
 <div id="msg"></div>
 <canvas id="game"></canvas>
 
+<!-- Audio -->
 <audio id="bgMusic" loop><source src="Connect4_3\Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg"></audio>
 <audio id="shootSound"><source src="Connect4\ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg"></audio>
 <audio id="enemyGunSound"><source src="Magnum 44 sound.mp4" type="audio/mp4"></audio>
@@ -174,7 +181,6 @@ const msg = document.getElementById("msg");
 const bgMusic = document.getElementById("bgMusic");
 const menuMusic = document.getElementById("menuMusic");
 
-// Audio
 const shootSound = document.getElementById("shootSound");
 const itemPickupSound = document.getElementById("itemPickupSound");
 const carEscapeSound = document.getElementById("carEscapeSound");
@@ -196,19 +202,18 @@ sndTommyTalk.volume = 1.0; sndTurretLaugh.volume = 0.8; sndTurretDeath.volume = 
 sndDirectHit.volume = 0.6; sndRevolverTalk.volume = 1.0; sndRobotDeath.volume = 0.9;
 sndRevolver.volume = 1.0; sndShotgun.volume = 0.65; sndTommy.volume = 0.75; sndTurret.volume = 0.95;
 
-// Boot Sequence
+// Boot Sequence with Corrected Music Timing
 initScreen.onclick = () => {
     initScreen.style.display = "none";
     splashScreen.style.display = "flex";
-    menuMusic.play().catch(()=>{}); 
     
+    // Wait for the 4-second splash animation to complete
     setTimeout(() => {
-        splashScreen.style.opacity = "0";
-        setTimeout(() => {
-            splashScreen.style.display = "none";
-            titleScreen.style.display = "flex";
-        }, 1500);
-    }, 4500);
+        splashScreen.style.display = "none";
+        titleScreen.style.display = "flex";
+        // Play music precisely when the title appears
+        menuMusic.play().catch(()=>{}); 
+    }, 4000);
 };
 
 // Menus
@@ -216,23 +221,42 @@ document.getElementById("startBtn").onclick = startGame;
 document.getElementById("howToBtn").onclick = () => { titleScreen.style.display = "none"; howToScreen.style.display = "flex"; };
 document.getElementById("backBtn").onclick = () => { howToScreen.style.display = "none"; titleScreen.style.display = "flex"; };
 document.getElementById("resumeBtn").onclick = togglePause;
-document.getElementById("restartBtn").onclick = () => { resetToMenu("full"); startGame(); };
-document.getElementById("quitBtn").onclick = () => { resetToMenu("full"); };
+document.getElementById("restartBtn").onclick = () => { resetToMenu(); startGame(); };
+document.getElementById("quitBtn").onclick = () => { resetToMenu(); };
 
 function startGame() {
     titleScreen.style.display = "none";
     pauseScreen.style.display = "none";
     menuMusic.pause(); menuMusic.currentTime = 0;
     
-    gameStarted = true; paused = false;
+    stopAllSounds(); 
+
+    // Directly Setup Fresh Game State
+    player = { x: 3.5, y: 3.5, angle: 0, speed: 0.070, health: 1000, ammo: 50, maxAmmo: 200, lives: 3 };
+    currentMag = 50; isReloading = false; reloadTimer = 0;
+    bullets = []; enemyBullets = [];
+    initEnemies(); initItemsAndCar(); resetPickups();
+    collectedMessageShown = false; carWarningShown = false;
+    
+    gameStarted = true; paused = false; gameOver = false; gameWin = false; endTimer = 0;
+    
     crosshair.style.display = "block";
-    
-    initGame();
-    
     bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
     
     showMessage("CLICK TO LOCK MOUSE", 3000);
     canvas.requestPointerLock();
+}
+
+function resetToMenu() {
+    stopAllSounds();
+    gameStarted = false; gameOver = false; gameWin = false; endTimer = 0;
+    bullets = []; enemyBullets = [];
+    crosshair.style.display = "none"; msg.style.display = "none";
+    if (document.pointerLockElement === canvas) document.exitPointerLock?.();
+    
+    pauseScreen.style.display = "none";
+    titleScreen.style.display = "flex";
+    menuMusic.currentTime = 0; menuMusic.play().catch(()=>{});
 }
 
 function togglePause() {
@@ -280,13 +304,13 @@ function makeTexture(type){
     let cnv = document.createElement("canvas"); 
     cnv.width = 64; cnv.height = 64;
     let cctx = cnv.getContext("2d");
-    if(type === 0) { // Red Velvet Wallpaper with Gold
+    if(type === 0) { 
         cctx.fillStyle = "#4a1111"; cctx.fillRect(0,0,64,64);
         cctx.fillStyle = "#c99d4d"; cctx.fillRect(0,0,4,64); cctx.fillRect(32,0,4,64);
-    } else if(type === 1) { // Dark Wood Paneling
+    } else if(type === 1) { 
         cctx.fillStyle = "#2b1704"; cctx.fillRect(0,0,64,64);
         cctx.fillStyle = "#1a0e02"; cctx.fillRect(0,0,64,4); cctx.fillRect(0,30,64,4);
-    } else { // Emerald Accent
+    } else { 
         cctx.fillStyle = "#0f2918"; cctx.fillRect(0,0,64,64);
         cctx.fillStyle = "#163822"; cctx.fillRect(0,32,64,32);
     }
@@ -348,13 +372,31 @@ let magSize = 50, currentMag = 50, isReloading = false, reloadTimer = 0;
 let collectedMessageShown = false, carWarningShown = false;
 let zBuffer = [];
 
+let enemiesTemplate = [
+    {x:11.5, y:1.5, type:"revolver"}, {x:23.5, y:1.5, type:"revolver"}, {x:20.5, y:11.5, type:"revolver"},
+    {x:21.5, y:13.5, type:"revolver"}, {x:21.5, y:17.5, type:"revolver"}, {x:2.5, y:9.5, type:"revolver"},
+    {x:5.5, y:7.5, type:"shotgun"}, {x:5.5, y:10.5, type:"shotgun"}, {x:4.5, y:17.5, type:"shotgun"},
+    {x:16.5, y:1.5, type:"tommy"}, {x:14.5, y:7.5, type:"tommy"}, {x:14.5, y:10.5, type:"tommy"}, {x:14.5, y:18.5, type:"tommy"},
+    {x:26.5, y:3.5, type:"turret"}, {x:24.5, y:10.5, type:"turret"}, {x:8.5, y:18.5, type:"turret"}, {x:10.5, y:18.5, type:"turret"}
+];
+
+function initEnemies(){ enemies = enemiesTemplate.map(e => ({ ...e, alive: true, health: ENEMY_TYPES[e.type].health, shootCooldown: 0, state: "idle", dir: Math.random() * Math.PI * 2, stateTimer: 0, meleeCooldown: 0 })); }
+function initItemsAndCar() {
+    items = [{x:26.5,y:1.5,img:objectImages[0]},{x:12.5,y:3.5,img:objectImages[2]},{x:19.5,y:5.5,img:objectImages[1]},{x:11.5,y:13.5,img:objectImages[3]},{x:26.5,y:17.5,img:objectImages[4]},{x:1.5,y:18.5,img:objectImages[5]}].map(i => ({...i, collected:false}));
+    car = {x:1.5, y:1.5};
+}
+function resetPickups() {
+    healthPacks = [{x:14.5, y:3.5}, {x:2.5, y:6.5}, {x:16.5, y:6.5}, {x:24.5, y:9.5}, {x:16.5, y:10.5}, {x:23.5, y:17.5}, {x:2.5, y:10.5}].map(p => ({...p, collected:false}));
+    oneUps = [{ x:26.5, y:5.5 }, { x:9.5, y:18.5 }].map(p => ({...p, collected:false}));
+}
+
 // ========================
 // Input
 // ========================
 addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === "p") togglePause();
-    if (e.key.toLowerCase() === "r" && currentMag < magSize && !isReloading && gameStarted && !paused) triggerReload();
+    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused) triggerReload();
     if ((e.code === "Space" || e.key === " ") && canShoot()) { shooting = true; }
 });
 addEventListener("keyup", e => {
@@ -396,15 +438,13 @@ function movePlayer(){
 // Rendering
 // ========================
 function castRays(){
-    const w = canvas.width, h = viewHeight; // Constrain to above status bar
+    const w = canvas.width, h = viewHeight;
     zBuffer = new Array(w);
     
-    // Crimson Velvet Ceiling
     let skyGradient = ctx.createLinearGradient(0, 0, 0, h/2);
     skyGradient.addColorStop(0, "#1a0000"); skyGradient.addColorStop(1, "#4a0505");
     ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, h/2);
 
-    // Polished Hardwood Floor
     let floorGradient = ctx.createLinearGradient(0, h/2, 0, h);
     floorGradient.addColorStop(0, "#0f0502"); floorGradient.addColorStop(1, "#2b1408");
     ctx.fillStyle = floorGradient; ctx.fillRect(0, h/2, w, h/2);
@@ -437,7 +477,6 @@ function castRays(){
         ctx.fillStyle = texture;
         ctx.fillRect(i, (h - wallH)/2, 1, wallH);
         
-        // Depth shading & corner shading (no heavy shadowBlur)
         let shadowAlpha = Math.min(1, correctedDist/12 + (side ? 0.2 : 0));
         ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`;
         ctx.fillRect(i, (h - wallH)/2, 1, wallH);
@@ -496,14 +535,12 @@ function drawSprites(){
             ctx.drawImage(carImg, sx - sz/2, h/2 - sz/2, sz, sz);
         } else if (d.type === 'item') {
             let size = Math.min(130, Math.max(42, 88 * (6 / dist)));
-            ctx.shadowBlur = 10; ctx.shadowColor = "rgba(255, 200, 100, 0.8)";
             ctx.drawImage(obj.img, sx - size/2, h/2 - size/2, size, size);
         } else if (d.type === 'health') {
             let size = Math.min(196, Math.max(24, 420 / dist));
             ctx.drawImage(healthPackImg, sx - size/2, h/2 - size/2, size, size);
         } else if (d.type === '1up') {
             let size = Math.min(160, Math.max(32, 420 / dist));
-            ctx.shadowBlur = 15; ctx.shadowColor = "lime";
             ctx.drawImage(oneUpImg, sx - size/2, h/2 - size/2, size, size);
         }
         ctx.restore();
@@ -520,8 +557,8 @@ function drawBullets(){
             let sx = w/2 + Math.tan(ang)*w/2;
             if(sx >= 0 && sx < w && zBuffer[Math.floor(sx)] > dist){
                 let sz = (h / Math.max(dist, 0.2)) * 0.06; sz = Math.max(6, sz);
-                ctx.fillStyle="#ffaa00"; ctx.fillRect(sx - sz/2, h/2 - sz/2, sz, sz*1.5); // Wide gold tracer
-                ctx.fillStyle="#ffffff"; ctx.fillRect(sx - sz/4, h/2 - sz/4, sz/2, sz);  // Inner white core
+                ctx.fillStyle="#ffaa00"; ctx.fillRect(sx - sz/2, h/2 - sz/2, sz, sz*1.5); 
+                ctx.fillStyle="#ffffff"; ctx.fillRect(sx - sz/4, h/2 - sz/4, sz/2, sz);  
             }
         }
     });
@@ -599,7 +636,7 @@ function shootEnemies(){
     if(shootSound.paused) shootSound.play().catch(()=>{});
     bullets.push({ x: player.x + Math.cos(player.angle) * 0.2, y: player.y + Math.sin(player.angle) * 0.2, angle: player.angle, speed: 0.35, life: 90 });
     
-    fireCooldown = 8; // Tommy gun speed
+    fireCooldown = 8; 
     currentMag--;
     if(currentMag <= 0) { shooting = false; shootSound.pause(); triggerReload(); }
 }
@@ -702,7 +739,7 @@ function updateGame(){
     });
     items.forEach(item => {
         if(!item.collected && Math.hypot(player.x - item.x, player.y - item.y) < 0.5){
-            item.collected = true; itemPickupSound.currentTime = 0; itemPickupSound.play(); showMessage("Item Secured", 1500);
+            item.collected = true; itemPickupSound.currentTime = 0; itemPickupSound.play(); showMessage("Stash Secured", 1500);
         }
     });
     if(items.every(i => i.collected) && !collectedMessageShown){
@@ -720,13 +757,32 @@ function updateGame(){
         }
     }
 
-    const distToCar = Math.hypot(player.x - car.x, player.y - car.y);
-    if(items.every(it => it.collected) && distToCar < 1 && !gameWin) {
-        gameWin = true; endTimer = 300; stopAllSounds(); carEscapeSound.currentTime = 0; carEscapeSound.play().catch(()=>{});
-        crosshair.style.display = "none";
-    } else if(distToCar < 1 && !items.every(it => it.collected)) {
-        if(!carWarningShown) { showMessage("Collect all the stash before leaving!", 2000); carWarningShown = true; }
-    } else { carWarningShown = false; }
+    checkCarEscape();
+}
+
+function checkCarEscape() {
+    const distToCar = Math.hypot(player.x - (car.x + 0.5), player.y - (car.y + 0.5));
+    if (distToCar < 1.0) {
+        if (!items.every(i => i.collected)) {
+            if(!carWarningShown) { showMessage("COLLECT ALL STASH BEFORE LEAVING!", 2000); carWarningShown = true; }
+        } else if (!gameWin) {
+            gameWin = true;
+            
+            crosshair.style.display = "none";
+            showMessage("A CLEAN GETAWAY!", 999999); 
+            
+            carEscapeSound.currentTime = 0; carEscapeSound.play().catch(()=>{});
+            paused = true; document.exitPointerLock(); stopAllSounds();
+            
+            carEscapeSound.onended = () => {
+                titleScreen.style.display = "flex"; 
+                resetToMenu(); 
+                carEscapeSound.onended = null; 
+            };
+        }
+    } else {
+        carWarningShown = false;
+    }
 }
 
 function handleEnemyDeath(e){
@@ -743,35 +799,6 @@ function stopEnemySound(e){
 }
 
 // ========================
-// Reset & Flow
-// ========================
-function resetToMenu(type = "full") {
-    stopAllSounds();
-    gameStarted = false; gameOver = false; gameWin = false; endTimer = 0;
-    bullets = []; enemyBullets = [];
-    if (document.pointerLockElement === canvas) document.exitPointerLock?.();
-    
-    if (type === "full") {
-        player = { x: 3.5, y: 3.5, angle: 0, speed: 0.070, health: 1000, lives: 3, ammo: 50, maxAmmo: 200 };
-        currentMag = 50; isReloading = false; reloadTimer = 0;
-        initEnemies(); initItemsAndCar(); resetPickups();
-        collectedMessageShown = false;
-        menuMusic.play().catch(()=>{});
-    }
-}
-
-function initGame() { resetToMenu("full"); gameOver = false; gameWin = false; endTimer = 0; }
-function initEnemies(){ enemies = enemiesTemplate.map(e => ({ ...e, alive: true, health: ENEMY_TYPES[e.type].health, shootCooldown: 0, state: "idle", dir: Math.random() * Math.PI * 2, stateTimer: 0, meleeCooldown: 0 })); }
-function initItemsAndCar() {
-    items = [{x:26.5,y:1.5,img:objectImages[0]},{x:12.5,y:3.5,img:objectImages[2]},{x:19.5,y:5.5,img:objectImages[1]},{x:11.5,y:13.5,img:objectImages[3]},{x:26.5,y:17.5,img:objectImages[4]},{x:1.5,y:18.5,img:objectImages[5]}].map(i => ({...i, collected:false}));
-    car = {x:1.5, y:1.5};
-}
-function resetPickups() {
-    healthPacks = healthPacksTemplate.map(p => ({...p, collected:false}));
-    oneUps = [{ x:26.5, y:5.5 }, { x:9.5, y:18.5 }].map(p => ({...p, collected:false}));
-}
-
-// ========================
 // Main Loop
 // ========================
 function loop(){
@@ -780,9 +807,9 @@ function loop(){
 
     if(!gameOver && !gameWin){
         movePlayer();
-        if(fireCooldown>0) fireCooldown--;
-        if(isReloading) { reloadTimer--; if(reloadTimer<=0){ isReloading=false; currentMag=magSize; } }
-        if(shooting && fireCooldown<=0 && !isReloading) shootEnemies();
+        if(fireCooldown > 0) fireCooldown--;
+        if(isReloading) { reloadTimer--; if(reloadTimer <= 0){ isReloading = false; currentMag = magSize; } }
+        if(shooting && fireCooldown <= 0 && !isReloading) shootEnemies();
         updateGame();
     }
     
@@ -793,14 +820,13 @@ function loop(){
     drawStatusBar();
 
     // End overlays
-    if(gameOver || gameWin) {
+    if(gameOver) {
         const w = canvas.width, h = canvas.height; ctx.save(); ctx.textAlign="center";
         ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,w,h);
         ctx.font="72px Georgia";
-        if(gameOver){ ctx.fillStyle="#f44"; ctx.fillText("WACKED", w/2, h/2-10); ctx.font="24px Georgia"; ctx.fillText("Returning to hideout...", w/2, h/2+40); }
-        if(gameWin){ ctx.fillStyle="#c99d4d"; ctx.fillText("A CLEAN GETAWAY", w/2, h/2-10); ctx.font="24px Georgia"; ctx.fillText("All stash secured. You're a made man.", w/2, h/2+40); }
+        ctx.fillStyle="#f44"; ctx.fillText("WACKED", w/2, h/2-10); ctx.font="24px Georgia"; ctx.fillText("Returning to hideout...", w/2, h/2+40);
         ctx.restore();
-        endTimer--; if(endTimer <= 0) { titleScreen.style.display = "flex"; resetToMenu("full"); }
+        endTimer--; if(endTimer <= 0) { titleScreen.style.display = "flex"; resetToMenu(); }
     }
 }
 loop();
