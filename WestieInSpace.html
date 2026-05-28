@@ -17,11 +17,17 @@
         padding: 10px 20px; border: 1px solid #00ffff; border-radius: 5px;
         display: none;
     }
+    
+    /* Thematic In-Game Messages */
     #msg { 
         position:absolute; top:30%; left:50%; transform: translate(-50%, -50%);
-        color:#ffcc00; font-size:32px; z-index:9; text-shadow: 0 0 15px #ffcc00; 
-        text-align: center;
+        color:#00ffff; font-size:28px; z-index:9; text-shadow: 0 0 10px #00ffff; 
+        text-align: center; background: rgba(0, 15, 30, 0.85);
+        padding: 20px 40px; border: 2px solid #00ffff; border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,255,255,0.3); text-transform: uppercase;
+        display: none; 
     }
+    
     #objectives {
         position:absolute; top:20px; right:20px; 
         background:rgba(0, 15, 30, 0.7); border: 1px solid #00ffff; 
@@ -55,7 +61,6 @@
         text-shadow: 0 0 15px #7df9ff; letter-spacing: 5px; text-transform: uppercase;
     }
 
-    /* Animated Menu Background */
     @keyframes bgPan {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
@@ -67,7 +72,6 @@
         animation: bgPan 30s linear infinite;
     }
 
-    /* Title Animations */
     @keyframes titleDrop {
         0% { transform: translateY(-100px); opacity: 0; }
         100% { transform: translateY(0); opacity: 1; }
@@ -80,7 +84,6 @@
     
     #howToScreen h1 { font-size: 50px; margin-bottom: 30px; text-shadow: 0 0 15px #00ffff; }
 
-    /* Button Animations */
     @keyframes buttonsSlideUp {
         0% { transform: translateY(40px); opacity: 0; }
         100% { transform: translateY(0); opacity: 1; }
@@ -117,7 +120,6 @@
 
 <canvas id="game"></canvas>
 
-<!-- HUD Elements -->
 <div id="hud"></div>
 <div id="objectives"></div>
 <div id="msg"></div>
@@ -127,12 +129,10 @@
     <div class="ch-part ch-center"></div>
 </div>
 
-<!-- Intro Splash -->
 <div id="splashScreen" class="screen">
     <h1 class="fade-text">DeShrimpo Games Presents</h1>
 </div>
 
-<!-- Title Screen -->
 <div id="titleScreen" class="screen menu-bg">
     <h1>The Space Escape 3D</h1>
     <div class="menu-buttons">
@@ -141,7 +141,6 @@
     </div>
 </div>
 
-<!-- How To Play -->
 <div id="howToScreen" class="screen menu-bg">
     <h1>HOW TO PLAY</h1>
     <div class="instructions">
@@ -150,12 +149,12 @@
         <p><span>W, A, S, D</span> → Move & Strafe</p>
         <p><span>Mouse</span> → Look Around</p>
         <p><span>Left Click / Space</span> → Fire Weapon</p>
+        <p><span>R</span> → Reload</p>
         <p><span>P</span> → Pause Menu</p>
     </div>
     <button id="backBtn" style="width: 300px;">BACK TO MENU</button>
 </div>
 
-<!-- Pause Menu -->
 <div id="pauseScreen" class="screen">
     <h1>GAME PAUSED</h1>
     <div class="menu-buttons" style="opacity:1; animation:none;">
@@ -188,10 +187,9 @@ const spaceshipEngineSound = new Audio("Connect4/Spaceship engine start up I Sou
 
 // ================= GAME LOGIC / UI CONTROL =================
 let gameStarted = false, paused = false;
-let hasEscaped = false; // Objective tracker
+let hasEscaped = false; 
 const FORCE_VISIBLE_DIST = 0.8; 
 
-// Screens
 const splashScreen = document.getElementById("splashScreen");
 const titleScreen = document.getElementById("titleScreen");
 const howToScreen = document.getElementById("howToScreen");
@@ -201,7 +199,6 @@ const crosshair = document.getElementById("crosshair");
 const msg = document.getElementById("msg");
 const objectivesDiv = document.getElementById("objectives");
 
-// Setup Splash Sequence
 setTimeout(() => {
     splashScreen.style.opacity = "0";
     setTimeout(() => {
@@ -210,32 +207,33 @@ setTimeout(() => {
     }, 1000);
 }, 4000);
 
-// Menu Buttons
 document.getElementById("startBtn").onclick = startGame;
 document.getElementById("howToBtn").onclick = () => { titleScreen.style.display = "none"; howToScreen.style.display = "flex"; };
 document.getElementById("backBtn").onclick = () => { howToScreen.style.display = "none"; titleScreen.style.display = "flex"; };
 
-// Pause Menu Buttons
 document.getElementById("resumeBtn").onclick = togglePause;
-document.getElementById("restartBtn").onclick = () => { resetGame("death"); togglePause(); };
+document.getElementById("restartBtn").onclick = () => { resetGame(); togglePause(); };
 document.getElementById("quitBtn").onclick = () => { 
-    togglePause(); gameStarted = false; 
-    hideHUD(); bgMusic.pause(); bgMusic.currentTime = 0;
+    togglePause(); 
+    resetGame();
+    gameStarted = false; 
+    hideHUD(); 
     titleScreen.style.display = "flex"; 
 };
 
 function startGame() {
     titleScreen.style.display = "none";
     gameStarted = true;
+    resetGame(); // Ensure fresh start
     showHUD();
-    msg.innerText = "CLICK TO LOCK MOUSE";
-    setTimeout(() => {if(msg.innerText === "CLICK TO LOCK MOUSE") msg.innerText = "";}, 3000);
+    showMessage("CLICK TO LOCK MOUSE", 3000);
+    bgMusic.currentTime = 0;
     bgMusic.play().catch(e => console.log("Autoplay blocked"));
     canvas.requestPointerLock();
 }
 
 function showHUD() { hud.style.display = "block"; crosshair.style.display = "block"; objectivesDiv.style.display = "block"; }
-function hideHUD() { hud.style.display = "none"; crosshair.style.display = "none"; objectivesDiv.style.display = "none"; }
+function hideHUD() { hud.style.display = "none"; crosshair.style.display = "none"; objectivesDiv.style.display = "none"; msg.style.display = "none"; }
 
 function togglePause() {
     if(!gameStarted) return;
@@ -243,10 +241,15 @@ function togglePause() {
     if(paused) {
         document.exitPointerLock();
         pauseScreen.style.display = "flex";
+        // Halt Audio
+        bgMusic.pause();
         miniBossGunSound.pause();
+        spaceshipEngineSound.pause();
     } else {
         pauseScreen.style.display = "none";
         canvas.requestPointerLock();
+        // Resume Audio
+        bgMusic.play().catch(()=>{});
     }
 }
 
@@ -265,9 +268,8 @@ const map = [
 ];
 const MAP_W = map[0].length, MAP_H = map.length;
 
-let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:20, maxAmmo:40 };
+let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:5, maxAmmo:40 }; // 5 in reserve + 5 in mag = 10 total
 
-// Magazine Logic
 let magSize = 5;
 let currentMag = 5;
 let isReloading = false;
@@ -278,20 +280,20 @@ let enemiesTemplate = [
     {x:10.5, y:5.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:14.5, y:2.5, alive:true, health:100, shootCooldown:0, dir:0}, 
     {x:12.5, y:7.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:3.5, y:8.5, alive:true, health:100, shootCooldown:0, dir:0}  
 ];
-let enemies = enemiesTemplate.map(e => ({...e}));
+let enemies = [];
+
+const healthPickupsTemplate = [ {x:2.5, y:1.5}, {x:11.5, y:2.5}, {x:6.5, y:6.5}, {x:15.5, y:1.5}, {x:13.5, y:5.5}, {x:5.5, y:8.5} ];
+let healthPickups = [];
 
 const boss = { x: 21.5, y: 8.5, homeX: 21.5, homeY: 8.5, alive: true, health: 200, maxHealth: 200, dir: 1, speed: 0.02, patrolMinX: 20.5, patrolMaxX: 22.0, shootCooldown: 0, dirAngle: 0, fireRate: 0, isFiring: false };
 const spaceship = { x: 22, y: 1, unlocked: false };
 const bossKey = { x: null, y: null, collected: false, dropped: false };
-
-let healthPickups = [ {x:2.5, y:1.5, taken:false}, {x:11.5, y:2.5, taken:false}, {x:6.5, y:6.5, taken:false}, {x:15.5, y:1.5, taken:false}, {x:13.5, y:5.5, taken:false}, {x:5.5, y:8.5, taken:false} ];
 let ammoPickups = [];
 
 // Environment Dynamics
 let envStars = Array.from({length: 150}, () => ({ angle: Math.random() * Math.PI * 2, height: Math.random() }));
 let ambientShips = Array.from({length: 3}, () => ({ a: Math.random()*Math.PI*2, h: 0.1 + Math.random()*0.3, speed: 0.0005 + Math.random()*0.001 }));
 
-// Canvas setup
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
@@ -304,7 +306,6 @@ let bullets = [], enemyBullets = [];
 document.addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === "p") togglePause();
-    // Manual reload option
     if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused) triggerReload();
     if ((e.code === "Space" || e.key === " ") && canShoot()) shoot();
 });
@@ -313,7 +314,7 @@ document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas) mouseDX=e.movementX; });
 canvas.onclick = () => {
     if(!gameStarted || paused) return;
-    if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); msg.innerText = ""; } 
+    if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); } 
     else if(canShoot()) shoot();
 };
 
@@ -325,21 +326,17 @@ function shoot(){
     fireCooldown = 15; 
     currentMag--;
     
-    // Auto Reload when magazine empties
-    if(currentMag === 0 && player.ammo > 0) {
-        triggerReload();
-    }
+    if(currentMag === 0 && player.ammo > 0) triggerReload();
 }
 
 function triggerReload() {
     isReloading = true;
-    reloadTimer = 45; // Frames for animation
+    reloadTimer = 45; 
 }
 
 function isWall(x, y){ let tx = Math.floor(x), ty = Math.floor(y); return map[ty] && map[ty][tx] !== 0; }
 
 function move(){
-    // Standard Mouse Look
     player.angle += mouseDX * 0.002; 
     mouseDX = 0;
     
@@ -349,11 +346,10 @@ function move(){
     let c = Math.cos(player.angle), s = Math.sin(player.angle);
     let dx = 0, dy = 0;
 
-    // Standard WASD mapping
     if(keys["w"] || keys["arrowup"]){ dx += c * player.speed; dy += s * player.speed; }
     if(keys["s"] || keys["arrowdown"]){ dx -= c * player.speed; dy -= s * player.speed; }
-    if(keys["a"]){ dx += s * player.speed; dy -= c * player.speed; } // Strafe Left (Fixed)
-    if(keys["d"]){ dx -= s * player.speed; dy += c * player.speed; } // Strafe Right (Fixed)
+    if(keys["a"]){ dx += s * player.speed; dy -= c * player.speed; } 
+    if(keys["d"]){ dx -= s * player.speed; dy += c * player.speed; } 
 
     let nx = player.x + dx, ny = player.y + dy;
     if(!isWall(nx, player.y)) player.x = nx;
@@ -392,16 +388,18 @@ function updateBullets(){
     bullets = bullets.filter(b => b.life > 0);
 
     enemyBullets.forEach(b => {
-        // Enemy Bullet Logic: Travel forward towards player
         let nextX = b.x + Math.cos(b.a) * 0.15; 
         let nextY = b.y + Math.sin(b.a) * 0.15;
         
-        if(isWall(nextX, nextY)) b.life = 0; // Break on walls
+        if(isWall(nextX, nextY)) b.life = 0; 
         else { b.x = nextX; b.y = nextY; b.life--; }
         
         if(b.life > 0 && Math.hypot(player.x - b.x, player.y - b.y) < 0.3){
             player.health -= 10; b.life = 0;
-            if(player.health <= 0) resetGame("death");
+            if(player.health <= 0) {
+                resetGame();
+                showMessage("YOU DIED. LEVEL RESET.", 3000);
+            }
         }
     });
     enemyBullets = enemyBullets.filter(b => b.life > 0);
@@ -462,9 +460,10 @@ function updateItems(){
     });
     ammoPickups.forEach(a => {
         if(!a.taken && Math.hypot(player.x - a.x, player.y - a.y) < 0.5){
-            player.ammo = Math.min(player.ammo + 5, player.maxAmmo); a.taken = true;
+            // Ammo pickups explicitly reward exactly +3 bullets
+            player.ammo = Math.min(player.ammo + 3, player.maxAmmo); 
+            a.taken = true;
             ammoPickupSound.currentTime = 0; ammoPickupSound.play();
-            // Auto reload if ammo was completely empty
             if(currentMag === 0 && !isReloading) triggerReload();
         }
     });
@@ -476,7 +475,7 @@ function updateSpaceship() {
         if (!spaceship.unlocked) showMessage("SHIP LOCKED – FIND THE KEY");
         else if (!allEnemiesDefeated) showMessage("DEFEAT ALL ENEMIES BEFORE ESCAPING!");
         else if (!hasEscaped) {
-            hasEscaped = true; // Trigger Final Objective checkmark
+            hasEscaped = true; 
             showMessage("ESCAPE SUCCESSFUL!", 20000);
             spaceshipEngineSound.currentTime = 0; spaceshipEngineSound.play().catch(()=>{});
             paused = true; bgMusic.pause(); document.exitPointerLock(); hideHUD();
@@ -487,7 +486,7 @@ function updateSpaceship() {
             
             setTimeout(() => {
                 codeMessage.remove(); spaceshipEngineSound.pause(); spaceshipEngineSound.currentTime = 0;
-                titleScreen.style.display = "flex"; resetGame("win"); paused = false; gameStarted = false;
+                titleScreen.style.display = "flex"; resetGame(); paused = false; gameStarted = false;
             }, 20000);
         }
     }
@@ -497,36 +496,27 @@ function updateSpaceship() {
 function cast(){
     const w = canvas.width, h = canvas.height;
     
-    // Halo-esque Deep Space Sky
     let skyGradient = ctx.createLinearGradient(0, 0, 0, h/2);
-    skyGradient.addColorStop(0, "#000510");
-    skyGradient.addColorStop(1, "#001a33");
+    skyGradient.addColorStop(0, "#000510"); skyGradient.addColorStop(1, "#001a33");
     ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, h/2);
 
-    // Parallax Stars
     ctx.fillStyle = "white";
     envStars.forEach(s => {
         let sx = ((s.angle - player.angle + Math.PI*4) % (Math.PI*2)) / (Math.PI/3) * w;
         if(sx > 0 && sx < w) ctx.fillRect(sx, s.height * (h/2), 1.5, 1.5);
     });
 
-    // Parallax Ambient Ships
     ctx.fillStyle = "rgba(0, 255, 255, 0.4)";
     ambientShips.forEach(s => {
         s.a += s.speed;
         let sx = ((s.a - player.angle + Math.PI*4) % (Math.PI*2)) / (Math.PI/3) * w;
-        if(sx > 0 && sx < w) {
-            ctx.beginPath(); ctx.arc(sx, s.h * (h/2), 3, 0, Math.PI*2); ctx.fill();
-        }
+        if(sx > 0 && sx < w) { ctx.beginPath(); ctx.arc(sx, s.h * (h/2), 3, 0, Math.PI*2); ctx.fill(); }
     });
 
-    // Dark Detailed Floor
     let floorGradient = ctx.createLinearGradient(0, h/2, 0, h);
-    floorGradient.addColorStop(0, "#051505");
-    floorGradient.addColorStop(1, "#1a4a1a");
+    floorGradient.addColorStop(0, "#051505"); floorGradient.addColorStop(1, "#1a4a1a");
     ctx.fillStyle = floorGradient; ctx.fillRect(0, h/2, w, h/2);
 
-    // Smooth Raycasting Solid Metal Walls
     const fov = Math.PI/3; let zBuffer = [];
     for(let x = 0; x < w; x++){
         let ang = player.angle - fov/2 + fov*x/w;
@@ -539,8 +529,7 @@ function cast(){
             let mx = Math.floor(rx), my = Math.floor(ry);
             if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H || map[my][mx] === 1){
                 hit = true;
-                let remX = rx % 1; let remY = ry % 1;
-                if(remX < 0.05 || remX > 0.95) side = true; 
+                if((rx % 1) < 0.05 || (rx % 1) > 0.95) side = true; 
             }
         }
         
@@ -548,11 +537,9 @@ function cast(){
         let hgt = h / (correctedDist || 1);
 
         if(hit){
-            // Solid, depth-shaded metallic look (no lines)
             let brightness = Math.max(0, 1 - (correctedDist / 12));
             let r = 50 * brightness, g = 70 * brightness, b = 100 * brightness;
-            if(side){ r *= 0.7; g *= 0.7; b *= 0.7; } // darker side for contrast
-            
+            if(side){ r *= 0.7; g *= 0.7; b *= 0.7; } 
             ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
             ctx.fillRect(x, (h - hgt)/2, 1, hgt);
         }
@@ -561,110 +548,93 @@ function cast(){
     return zBuffer;
 }
 
-function drawEnemies(zBuffer){
+// Unified Z-Sorting Rendering Engine
+function drawSprites(zBuffer){
     const w = canvas.width, h = canvas.height;
-    const sortedEnemies = enemies.filter(e => e.alive).map(e => ({...e, dist: Math.hypot(e.x - player.x, e.y - player.y)})).sort((a,b) => b.dist - a.dist);
-    sortedEnemies.forEach(e => {
-        let ang = Math.atan2(e.y - player.y, e.x - player.x) - player.angle;
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-        const forceVisible = e.dist < FORCE_VISIBLE_DIST;
+    let drawables = [];
+    
+    // Push all entities into a single rendering pipeline
+    drawables.push({ type: 'ship', dist: Math.hypot(spaceship.x+0.5 - player.x, spaceship.y+0.5 - player.y), obj: spaceship });
+    enemies.forEach(e => { if(e.alive) drawables.push({ type: 'enemy', dist: Math.hypot(e.x - player.x, e.y - player.y), obj: e }); });
+    if(boss.alive) drawables.push({ type: 'boss', dist: Math.hypot(boss.x - player.x, boss.y - player.y), obj: boss });
+    healthPickups.forEach(p => { if(!p.taken) drawables.push({ type: 'health', dist: Math.hypot(p.x - player.x, p.y - player.y), obj: p }); });
+    ammoPickups.forEach(a => { if(!a.taken) drawables.push({ type: 'ammo', dist: Math.hypot(a.x - player.x, a.y - player.y), obj: a }); });
+    if(bossKey.dropped && !bossKey.collected) drawables.push({ type: 'key', dist: Math.hypot(bossKey.x - player.x, bossKey.y - player.y), obj: bossKey });
+
+    // Sort heavily occluded objects first (back to front to fix overlap visual glitches)
+    drawables.sort((a,b) => b.dist - a.dist); 
+
+    drawables.forEach(d => {
+        let dist = d.dist;
+        if(dist < 0.2) return; 
+        
+        let obj = d.obj;
+        let dx = (d.type==='ship' ? obj.x+0.5 : obj.x) - player.x;
+        let dy = (d.type==='ship' ? obj.y+0.5 : obj.y) - player.y;
+        
+        let ang = Math.atan2(dy, dx) - player.angle;
+        ang = Math.atan2(Math.sin(ang), Math.cos(ang)); 
+        
+        const forceVisible = dist < FORCE_VISIBLE_DIST;
         if(!forceVisible && Math.abs(ang) > Math.PI/2 + 0.02) return;
+        
         let sx = w/2 + Math.tan(ang) * w/2;
         if(!forceVisible && (sx < 0 || sx >= w)) return;
-        let idx = Math.max(0, Math.min(Math.floor(sx), zBuffer.length-1));
-        if(!forceVisible && zBuffer[idx] < e.dist) return;
-
-        let size = Math.max(h / Math.max(e.dist, 0.3) * 0.7, 28);
-        ctx.save(); ctx.shadowBlur = 20; ctx.shadowColor = "cyan";
-        ctx.drawImage(imgEnemy, sx - size/2, h/2 - size/2, size, size); ctx.restore();
-        ctx.fillStyle = "black"; ctx.fillRect(sx - size/2, h/2 - size/2 - 10, size, 6);
-        ctx.fillStyle = "lime"; ctx.fillRect(sx - size/2, h/2 - size/2 - 10, size * (e.health / 100), 6);
+        
+        let idx = Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1));
+        if(!forceVisible && zBuffer[idx] < dist) return;
+        
+        let sizeMult = d.type==='boss'? 1.2 : d.type==='ship'? 1.1 : d.type==='enemy'? 0.7 : d.type==='health'? 0.3 : 0.25;
+        let sz = Math.max(h / Math.max(dist, 0.3) * sizeMult, 20);
+        
+        ctx.save();
+        if(d.type === 'enemy') {
+            ctx.shadowBlur = 20; ctx.shadowColor = "cyan";
+            ctx.drawImage(imgEnemy, sx - sz/2, h/2 - sz/2, sz, sz);
+            ctx.fillStyle = "black"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 10, sz, 6);
+            ctx.fillStyle = "lime"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 10, sz * (obj.health / 100), 6);
+        } 
+        else if(d.type === 'boss') {
+            ctx.shadowBlur = 35; ctx.shadowColor = "red";
+            ctx.drawImage(imgBoss, sx - sz/2, h/2 - sz/2, sz, sz);
+            ctx.fillStyle = "black"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 18, sz, 12);
+            ctx.fillStyle = "red"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 18, sz * (obj.health / obj.maxHealth), 12);
+        }
+        else if(d.type === 'health') {
+            ctx.shadowBlur = 15; ctx.shadowColor = "pink"; ctx.drawImage(imgHealth, sx - sz/2, h/2 - sz/2, sz, sz);
+        }
+        else if(d.type === 'ammo') {
+            ctx.shadowBlur = 15; ctx.shadowColor = "yellow"; ctx.drawImage(imgAmmo, sx - sz/2, h/2 - sz/2, sz, sz);
+        }
+        else if(d.type === 'key') {
+            let bob = Math.sin(performance.now() * 0.004) * 0.05;
+            ctx.shadowBlur = 20; ctx.shadowColor = "#ffd700"; ctx.drawImage(imgKey, sx - sz/2, h/2 - sz/2 + bob * sz, sz, sz);
+        }
+        else if(d.type === 'ship') {
+            ctx.shadowBlur = 28; ctx.shadowColor = obj.unlocked ? "#00ffcc" : "#ff3333"; ctx.drawImage(imgShip, sx - sz/2, h/2 - sz/2, sz, sz);
+        }
+        ctx.restore();
     });
-}
-
-function drawBoss(zBuffer){
-    if(!boss.alive) return;
-    const w = canvas.width, h = canvas.height;
-    let dist = Math.hypot(boss.x - player.x, boss.y - player.y);
-    let ang = Math.atan2(boss.y - player.y, boss.x - player.x) - player.angle;
-    ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-    if(Math.abs(ang) > Math.PI/2) return;
-    let sx = w/2 + Math.tan(ang) * w/2; if(sx < 0 || sx >= w) return;
-    if(zBuffer[Math.floor(sx)] < dist) return;
-    let size = Math.max(h / Math.max(dist, 0.4) * 1.2, 48);
-    ctx.save(); ctx.shadowBlur = 35; ctx.shadowColor = "red";
-    ctx.drawImage(imgBoss, sx - size/2, h/2 - size/2, size, size); ctx.restore();
-    ctx.fillStyle = "black"; ctx.fillRect(sx - size/2, h/2 - size/2 - 18, size, 12);
-    ctx.fillStyle = "red"; ctx.fillRect(sx - size/2, h/2 - size/2 - 18, size * (boss.health / boss.maxHealth), 12);
-}
-
-function drawHealthPickups(zBuffer){
-    healthPickups.forEach(p => {
-        if(p.taken) return;
-        let dist = Math.hypot(p.x - player.x, p.y - player.y);
-        let ang = Math.atan2(p.y - player.y, p.x - player.x) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-        if(Math.abs(ang) > Math.PI/2 + 0.02) return;
-        let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; if(sx < 0 || sx >= canvas.width) return;
-        if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
-        let sz = Math.max(canvas.height / Math.max(dist, 0.3) * 0.3, 24);
-        ctx.save(); ctx.shadowBlur = 15; ctx.shadowColor = "pink"; ctx.drawImage(imgHealth, sx - sz/2, canvas.height/2 - sz/2, sz, sz); ctx.restore();
-    });
-}
-
-function drawAmmoPickups(zBuffer){
-    ammoPickups.forEach(a => {
-        if(a.taken) return;
-        let dist = Math.hypot(a.x - player.x, a.y - player.y);
-        let ang = Math.atan2(a.y - player.y, a.x - player.x) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-        if(Math.abs(ang) > Math.PI/2 + 0.02) return;
-        let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; if(sx < 0 || sx >= canvas.width) return;
-        if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
-        let sz = Math.max(canvas.height / Math.max(dist, 0.3) * 0.25, 22);
-        ctx.save(); ctx.shadowBlur = 15; ctx.shadowColor = "yellow"; ctx.drawImage(imgAmmo, sx - sz/2, canvas.height/2 - sz/2, sz, sz); ctx.restore();
-    });
-}
-
-function drawKey(zBuffer){
-    if(!bossKey.dropped || bossKey.collected) return;
-    let dist = Math.hypot(bossKey.x - player.x, bossKey.y - player.y);
-    let ang = Math.atan2(bossKey.y - player.y, bossKey.x - player.x) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-    if(Math.abs(ang) > Math.PI/2 + 0.02) return;
-    let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; if(sx < 0 || sx >= canvas.width) return;
-    if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
-    let bob = Math.sin(performance.now() * 0.004) * 0.05;
-    let sz = Math.max(canvas.height / Math.max(dist, 0.3) * 0.25, 20);
-    ctx.save(); ctx.shadowBlur = 20; ctx.shadowColor = "#ffd700"; ctx.drawImage(imgKey, sx - sz/2, canvas.height/2 - sz/2 + bob * sz, sz, sz); ctx.restore();
-}
-
-function drawSpaceship(zBuffer){
-    let dx = (spaceship.x + 0.5) - player.x, dy = (spaceship.y + 0.5) - player.y;
-    let dist = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-    if(Math.abs(ang) > Math.PI/2 + 0.02) return;
-    let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; if(sx < 0 || sx >= canvas.width) return;
-    if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
-    let sz = Math.max(canvas.height / Math.max(dist, 0.3) * 1.1, 80);
-    ctx.save(); ctx.shadowBlur = 28; ctx.shadowColor = spaceship.unlocked ? "#00ffcc" : "#ff3333";
-    ctx.drawImage(imgShip, sx - sz/2, canvas.height/2 - sz/2, sz, sz); ctx.restore();
 }
 
 function drawBullets(zBuffer){
-    // Stabilized Player Bullets
+    // Vivid Blue Player Bullets
     bullets.forEach(b=>{
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
         let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle;
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang)); // Normalization ensures they don't disappear at angles
+        ang = Math.atan2(Math.sin(ang), Math.cos(ang)); 
         
         if(Math.abs(ang) < Math.PI/2){
             let sx=canvas.width/2+Math.tan(ang)*canvas.width/2;
             if(sx>=0 && sx<canvas.width && zBuffer[Math.floor(sx)]>dist){
-                let sz=(canvas.height/Math.max(dist, 0.3))*0.05;
-                ctx.save(); ctx.shadowBlur=15; ctx.shadowColor="#00ffff"; ctx.fillStyle="#ffffff";
-                ctx.fillRect(sx-2,canvas.height/2-sz/2,4,sz); ctx.restore();
+                let sz=(canvas.height/Math.max(dist, 0.3))*0.08;
+                ctx.save(); ctx.shadowBlur=20; ctx.shadowColor="#0088ff"; ctx.fillStyle="#ffffff";
+                ctx.fillRect(sx-3,canvas.height/2-sz/2,6,sz); ctx.restore();
             }
         }
     });
 
-    // Epic Enemy Plasma Bullets
+    // Intense Red Enemy Plasma Bullets
     enemyBullets.forEach(b => {
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
         let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; 
@@ -676,15 +646,14 @@ function drawBullets(zBuffer){
         if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
         
         let size = Math.max(canvas.height / Math.max(dist, 0.3) * 0.1, 4);
-        let height = size * 3; // Elongated streak shape
+        let height = size * 3; 
         
         ctx.save(); 
-        ctx.shadowBlur = 20; ctx.shadowColor = "#cc00ff"; // Purple glow
+        ctx.shadowBlur = 25; ctx.shadowColor = "#ff0000"; 
         ctx.fillStyle = "#ffffff"; 
-        ctx.fillRect(sx - size/2, canvas.height/2 - height/2, size, height); // Hot core
-        ctx.fillStyle = "#cc00ff";
-        ctx.globalAlpha = 0.6;
-        ctx.fillRect(sx - size, canvas.height/2 - height/2 - size, size*2, height + size*2); // Outer aura
+        ctx.fillRect(sx - size/2, canvas.height/2 - height/2, size, height); 
+        ctx.fillStyle = "#ff0000"; ctx.globalAlpha = 0.6;
+        ctx.fillRect(sx - size, canvas.height/2 - height/2 - size, size*2, height + size*2);
         ctx.restore();
     });
 }
@@ -692,27 +661,23 @@ function drawBullets(zBuffer){
 function drawGun(){
     const w = canvas.width, h = canvas.height;
     
-    // Process Reload Animation Math
     let reloadOffset = 0;
     let reloadShake = 0;
     if(isReloading) {
-        let t = reloadTimer / 45; // Goes from 1 down to 0
-        reloadOffset = Math.sin(t * Math.PI) * 150; // Dips down off-screen smoothly
-        reloadShake = Math.sin(reloadTimer * 0.6) * 0.05; // Slight twist during reload
+        let t = reloadTimer / 45; 
+        reloadOffset = Math.sin(t * Math.PI) * 150; 
+        reloadShake = Math.sin(reloadTimer * 0.6) * 0.05; 
     }
 
     ctx.save();
-    // Move canvas origin to the bottom center (pivot point)
     ctx.translate(w/2, h + reloadOffset);
     if(isReloading) ctx.rotate(reloadShake);
 
-    // Draw gun relative to pivot (0, 0 is now bottom center of screen + offset)
-    ctx.fillStyle="#111"; ctx.fillRect(-18, -130, 36, 150); // barrel
-    ctx.fillStyle="#334"; ctx.fillRect(-40, -190, 80, 60); // body
-    ctx.fillStyle="#556"; ctx.fillRect(-35, -215, 70, 30); // scope base
-    ctx.fillStyle="#0ff"; ctx.fillRect(-4, -220, 8, 20); // neon sight
+    ctx.fillStyle="#111"; ctx.fillRect(-18, -130, 36, 150); 
+    ctx.fillStyle="#334"; ctx.fillRect(-40, -190, 80, 60); 
+    ctx.fillStyle="#556"; ctx.fillRect(-35, -215, 70, 30); 
+    ctx.fillStyle="#0ff"; ctx.fillRect(-4, -220, 8, 20); 
     
-    // Muzzle Flash
     if(fireCooldown > 12 && !isReloading){ 
         ctx.fillStyle="white"; ctx.shadowBlur=20; ctx.shadowColor="cyan"; 
         ctx.beginPath(); ctx.arc(0, -225, 15, 0, Math.PI*2); ctx.fill(); 
@@ -722,7 +687,11 @@ function drawGun(){
     ctx.restore();
 }
 
-function showMessage(text, duration = 2000) { msg.innerText = text; setTimeout(() => {if(msg.innerText === text) msg.innerText = "";}, duration); }
+function showMessage(text, duration = 2000) { 
+    msg.innerText = text; 
+    msg.style.display = "block";
+    setTimeout(() => {if(msg.innerText === text) msg.style.display = "none";}, duration); 
+}
 
 function updateObjectivesHUD() {
     const allEnemiesDefeated = enemies.every(e => !e.alive) && !boss.alive;
@@ -734,16 +703,17 @@ function updateObjectivesHUD() {
     `;
 }
 
-function resetGame(reason = "death"){
-    player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:20, maxAmmo:40 };
-    currentMag = magSize; isReloading = false; reloadTimer = 0; hasEscaped = false;
+function resetGame() {
+    // True Full Reset
+    player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:5, maxAmmo:40 }; 
+    currentMag = 5; isReloading = false; reloadTimer = 0; hasEscaped = false;
     enemies = enemiesTemplate.map(e => ({ ...e }));
-    healthPickups.forEach(p => p.taken = false); ammoPickups = [];
+    healthPickups = healthPickupsTemplate.map(p => ({ ...p, taken:false }));
+    ammoPickups = [];
     bullets = []; enemyBullets = [];
-    if(reason === "win"){
-        boss.alive = true; boss.health = boss.maxHealth; boss.x = boss.homeX; boss.y = boss.homeY;
-        bossKey.collected = false; bossKey.dropped = false; spaceship.unlocked = false;
-    }
+    
+    boss.alive = true; boss.health = boss.maxHealth; boss.x = boss.homeX; boss.y = boss.homeY; boss.isFiring = false;
+    bossKey.collected = false; bossKey.dropped = false; spaceship.unlocked = false;
 }
 
 // ================= LOOP =================
@@ -755,20 +725,13 @@ function loop(){
     
     if(fireCooldown > 0) fireCooldown--;
     
-    // Process Reload Timer
     if(isReloading) {
         reloadTimer--;
         if(reloadTimer <= 0) {
             isReloading = false;
-            // Refill mag based on remaining ammo pool
             let needed = magSize;
-            if(player.ammo >= needed) {
-                currentMag = needed;
-                player.ammo -= needed;
-            } else {
-                currentMag = player.ammo;
-                player.ammo = 0;
-            }
+            if(player.ammo >= needed) { currentMag = needed; player.ammo -= needed; } 
+            else { currentMag = player.ammo; player.ammo = 0; }
         }
     }
     
@@ -776,8 +739,7 @@ function loop(){
     
     const zBuffer = cast();
     
-    drawSpaceship(zBuffer); drawEnemies(zBuffer); drawBoss(zBuffer); 
-    drawHealthPickups(zBuffer); drawKey(zBuffer); drawAmmoPickups(zBuffer);
+    drawSprites(zBuffer);
     drawBullets(zBuffer); drawGun();
     
     updateObjectivesHUD();
