@@ -144,7 +144,7 @@
         <br>
         <p><span>W, A, S, D</span> → Move & Strafe</p>
         <p><span>Mouse</span> → Look Around</p>
-        <p><span>Spacebar</span> → Fire Weapon</p>
+        <p><span>Left Click / Space</span> → Fire Weapon</p>
         <p><span>R</span> → Reload</p>
         <p><span>P</span> → Pause Menu</p>
     </div>
@@ -339,11 +339,18 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas && !hasEscaped) mouseDX=e.movementX; });
 
-// Mouse click ONLY locks pointer, firing mapped strictly to Spacebar
-canvas.onclick = () => {
+// Smart Mouse Firing
+document.addEventListener("mousedown", e => {
     if(!gameStarted || paused || hasEscaped) return;
-    if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); } 
-};
+    
+    // If we aren't locked, the first click just locks the pointer
+    if(document.pointerLockElement !== canvas) { 
+        canvas.requestPointerLock(); 
+    } else if (e.button === 0 && canShoot()) {
+        // If we are locked and it's a left click, shoot
+        shoot();
+    }
+});
 
 function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted && !hasEscaped; }
 
@@ -512,7 +519,8 @@ function updateSpaceship() {
             crosshair.style.display = "none"; 
             objectivesDiv.style.display = "none"; 
             
-            showMessage("ESCAPE SUCCESSFUL!", 10000); 
+            // Large duration so it stays on screen until reset
+            showMessage("ESCAPE SUCCESSFUL!", 999999); 
             
             spaceshipEngineSound.currentTime = 0; 
             spaceshipEngineSound.play().catch(()=>{});
@@ -521,15 +529,15 @@ function updateSpaceship() {
             bgMusic.pause(); 
             document.exitPointerLock(); 
             
-            // Unskippable wait before dumping to main menu
-            setTimeout(() => {
-                spaceshipEngineSound.pause(); spaceshipEngineSound.currentTime = 0;
+            // Wait for the full audio clip to naturally finish
+            spaceshipEngineSound.onended = () => {
                 titleScreen.style.display = "flex"; 
                 resetGame("full"); 
                 paused = false; 
                 gameStarted = false;
                 msg.style.display = "none";
-            }, 8000); 
+                spaceshipEngineSound.onended = null; // Cleanup
+            };
         }
     }
 }
@@ -731,7 +739,11 @@ function drawGun(){
 function showMessage(text, duration = 2000) { 
     msg.innerText = text; 
     msg.style.display = "block";
-    setTimeout(() => {if(msg.innerText === text && !hasEscaped) msg.style.display = "none";}, duration); 
+    
+    // Only set the timeout to hide if it's not the escape sequence
+    if (text !== "ESCAPE SUCCESSFUL!") {
+        setTimeout(() => {if(msg.innerText === text && !hasEscaped) msg.style.display = "none";}, duration); 
+    }
 }
 
 function updateObjectivesHUD() {
