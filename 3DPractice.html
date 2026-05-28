@@ -421,11 +421,9 @@ input[type="range"]::-webkit-slider-thumb {
 </head>
 <body>
 
-<!-- CINEMATIC BARS -->
 <div class="cine-bar active" id="cineTop"></div>
 <div class="cine-bar active" id="cineBot"></div>
 
-<!-- INTRO -->
 <div id="introOverlay">
   <canvas id="introCanvas"></canvas>
   <div id="deshrimpoLogo">
@@ -434,7 +432,6 @@ input[type="range"]::-webkit-slider-thumb {
   </div>
 </div>
 
-<!-- MAIN MENU -->
 <div id="mainMenu">
   <canvas id="roseCanvas"></canvas>
   <div id="menuBg"></div>
@@ -449,7 +446,6 @@ input[type="range"]::-webkit-slider-thumb {
   </div>
 </div>
 
-<!-- HOW TO PLAY -->
 <div class="overlay-screen" id="howToScreen">
   <div class="overlay-panel">
     <div class="overlay-title">How to Play</div>
@@ -467,7 +463,6 @@ input[type="range"]::-webkit-slider-thumb {
   </div>
 </div>
 
-<!-- PAUSE MENU -->
 <div id="pauseMenu">
   <div class="pause-panel">
     <div class="pause-title">PAUSED</div>
@@ -492,17 +487,13 @@ input[type="range"]::-webkit-slider-thumb {
   </div>
 </div>
 
-<!-- GAME CANVAS -->
 <canvas id="game"></canvas>
 
-<!-- HUD -->
 <canvas id="gameHUD"></canvas>
 
-<!-- GAME MESSAGES -->
 <div id="gameMsg"></div>
 <div id="damageFlash"></div>
 
-<!-- CROSSHAIR -->
 <svg id="crosshair" width="40" height="40" viewBox="0 0 40 40" style="display:none">
   <line x1="20" y1="4" x2="20" y2="14" stroke="#c9a227" stroke-width="1.5" opacity="0.9"/>
   <line x1="20" y1="26" x2="20" y2="36" stroke="#c9a227" stroke-width="1.5" opacity="0.9"/>
@@ -511,7 +502,6 @@ input[type="range"]::-webkit-slider-thumb {
   <circle cx="20" cy="20" r="2" fill="none" stroke="#c9a227" stroke-width="1" opacity="0.7"/>
 </svg>
 
-<!-- AUDIO -->
 <audio id="bgMusic" loop><source src="Connect4_3/Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg"></audio>
 <audio id="shootSound"><source src="Connect4/ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg"></audio>
 <audio id="enemyGunSound"><source src="Magnum 44 sound.mp4" type="audio/mp4"></audio>
@@ -541,7 +531,6 @@ function resizeIntro() {
 resizeIntro();
 window.addEventListener('resize', resizeIntro);
 
-// Particle system for intro
 function spawnIntroParticles() {
   for (let i = 0; i < 3; i++) {
     introParticles.push({
@@ -567,7 +556,7 @@ let cinematicText = [
 ];
 let cinematicIdx = 0;
 let cinematicAlpha = 0;
-let cinematicFade = 1; // 1 = fade in, -1 = fade out
+let cinematicFade = 1;
 
 function runIntro() {
   introCtx.clearRect(0, 0, introCanvas.width, introCanvas.height);
@@ -576,7 +565,6 @@ function runIntro() {
   introTimer++;
 
   if (introPhase === 0) {
-    // DeShrimpo logo phase
     spawnIntroParticles();
     introParticles = introParticles.filter(p => p.life > 0);
     introParticles.forEach(p => {
@@ -589,7 +577,6 @@ function runIntro() {
     });
     introCtx.globalAlpha = 1;
 
-    // Gold vignette
     const grad = introCtx.createRadialGradient(
       introCanvas.width/2, introCanvas.height/2, 0,
       introCanvas.width/2, introCanvas.height/2, introCanvas.width*0.7
@@ -599,13 +586,10 @@ function runIntro() {
     introCtx.fillStyle = grad;
     introCtx.fillRect(0, 0, introCanvas.width, introCanvas.height);
 
-    if (introTimer < 40) {
-      introOpacity = introTimer / 40;
-    } else if (introTimer > 160) {
-      introOpacity = Math.max(0, 1 - (introTimer - 160) / 30);
-    } else {
-      introOpacity = 1;
-    }
+    if (introTimer < 40) introOpacity = introTimer / 40;
+    else if (introTimer > 160) introOpacity = Math.max(0, 1 - (introTimer - 160) / 30);
+    else introOpacity = 1;
+    
     deshrimpoLogo.style.opacity = introOpacity;
 
     if (introTimer > 200) {
@@ -614,8 +598,6 @@ function runIntro() {
       deshrimpoLogo.style.display = 'none';
     }
   } else if (introPhase === 1) {
-    // Cinematic text phase
-    // Subtle candle flicker
     const flicker = introCtx.createRadialGradient(
       introCanvas.width/2, introCanvas.height*0.3, 0,
       introCanvas.width/2, introCanvas.height*0.3, introCanvas.width*0.4
@@ -626,7 +608,6 @@ function runIntro() {
     introCtx.fillStyle = flicker;
     introCtx.fillRect(0, 0, introCanvas.width, introCanvas.height);
 
-    // Horizontal gold line
     introCtx.globalAlpha = 0.3;
     introCtx.strokeStyle = '#c9a227';
     introCtx.lineWidth = 1;
@@ -711,7 +692,6 @@ function animateRose() {
     roseCtx.globalAlpha = p.alpha;
     roseCtx.translate(p.x, p.y);
     roseCtx.rotate(p.rot);
-    // Draw petal shape
     roseCtx.fillStyle = p.color;
     roseCtx.beginPath();
     roseCtx.ellipse(0, 0, p.size * 0.4, p.size, 0, 0, Math.PI * 2);
@@ -789,7 +769,6 @@ function stopMenuMusic() {
   menuMusic.currentTime = 0;
 }
 
-// Unlock on first click
 document.addEventListener('click', function unlock() {
   if (!menuMusicUnlocked && document.getElementById('mainMenu').style.display === 'flex') {
     playMenuMusic();
@@ -871,7 +850,7 @@ const map = [
 const MAP_W = map[0].length, MAP_H = map.length;
 
 // ============================================================
-// WALL TEXTURE GENERATION — Italian Club
+// WALL TEXTURE GENERATION
 // ============================================================
 function makeWallTexture(type) {
   const c = document.createElement('canvas');
@@ -879,7 +858,6 @@ function makeWallTexture(type) {
   const cx = c.getContext('2d');
 
   if (type === 'wood') {
-    // Dark wood paneling
     const g = cx.createLinearGradient(0, 0, 64, 0);
     g.addColorStop(0,    '#1a0f08');
     g.addColorStop(0.3,  '#2e1a0e');
@@ -887,23 +865,19 @@ function makeWallTexture(type) {
     g.addColorStop(1,    '#1a0f08');
     cx.fillStyle = g;
     cx.fillRect(0, 0, 64, 64);
-    // Wood grain lines
     for (let i = 0; i < 12; i++) {
       const x = (i / 12) * 64 + Math.random() * 4;
       cx.strokeStyle = `rgba(${60+Math.random()*20},${30+Math.random()*10},${8+Math.random()*5},${0.4+Math.random()*0.3})`;
       cx.lineWidth = 0.5 + Math.random();
       cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x + (Math.random()-0.5)*8, 64); cx.stroke();
     }
-    // Wainscoting
     cx.strokeStyle = '#c9a22730';
     cx.lineWidth = 1;
     cx.strokeRect(2, 2, 60, 60);
     cx.strokeRect(5, 5, 54, 54);
   } else if (type === 'wallpaper') {
-    // Dark flocked wallpaper
     cx.fillStyle = '#1a0d18';
     cx.fillRect(0, 0, 64, 64);
-    // Damask pattern (simplified)
     cx.fillStyle = 'rgba(100,60,80,0.25)';
     for (let y = 0; y < 4; y++) {
       for (let x = 0; x < 4; x++) {
@@ -920,7 +894,6 @@ function makeWallTexture(type) {
       cx.beginPath(); cx.moveTo(0, y*16); cx.lineTo(64, y*16); cx.stroke();
     }
   } else {
-    // Brick
     cx.fillStyle = '#2a1008';
     cx.fillRect(0, 0, 64, 64);
     cx.fillStyle = '#1a0804';
@@ -943,17 +916,13 @@ const wallTextureCanvases = [
   makeWallTexture('brick')
 ];
 
-// Pre-render patterns
-const wallPatterns = wallTextureCanvases.map(c => ctx.createPattern(c, 'repeat'));
-
 // ============================================================
-// FLOOR / CEILING TEXTURES
+// FLOOR / CEILING TEXTURES & DATA CACHING (OPTIMIZATION)
 // ============================================================
 function makeFloorTexture() {
   const c = document.createElement('canvas');
   c.width = 64; c.height = 64;
-  const cx = c.getContext('2d');
-  // Checkered marble — black & dark cream
+  const cx = c.getContext('2d', { willReadFrequently: true });
   for (let row = 0; row < 4; row++) {
     for (let col = 0; col < 4; col++) {
       const light = (row + col) % 2 === 0;
@@ -963,7 +932,6 @@ function makeFloorTexture() {
         cx.strokeStyle = 'rgba(201,162,39,0.1)';
         cx.lineWidth = 0.5;
         cx.strokeRect(col*16+1, row*16+1, 14, 14);
-        // Marble vein
         cx.strokeStyle = 'rgba(255,240,200,0.07)';
         cx.lineWidth = 0.5;
         cx.beginPath();
@@ -979,8 +947,7 @@ function makeFloorTexture() {
 function makeCeilingTexture() {
   const c = document.createElement('canvas');
   c.width = 64; c.height = 64;
-  const cx = c.getContext('2d');
-  // Dark coffered ceiling
+  const cx = c.getContext('2d', { willReadFrequently: true });
   cx.fillStyle = '#0d0a0e';
   cx.fillRect(0, 0, 64, 64);
   cx.strokeStyle = 'rgba(201,162,39,0.15)';
@@ -995,6 +962,9 @@ function makeCeilingTexture() {
 
 const floorTex = makeFloorTexture();
 const ceilTex = makeCeilingTexture();
+// CACHE PIXEL ARRAYS GLOBALLY TO PREVENT IN-LOOP GETIMAGEDATA LAG
+const floorData = floorTex.getContext('2d').getImageData(0, 0, 64, 64).data;
+const ceilData = ceilTex.getContext('2d').getImageData(0, 0, 64, 64).data;
 
 // ============================================================
 // PLAYER
@@ -1115,7 +1085,7 @@ let bullets = [], enemyBullets = [];
 let zBuffer = [];
 
 // ============================================================
-// RAYCASTING WITH TEXTURED WALLS + FLOOR/CEILING
+// RAYCASTING (OPTIMIZED)
 // ============================================================
 function castRays() {
   const w = canvas.width, h = canvas.height;
@@ -1126,12 +1096,12 @@ function castRays() {
 
   for (let i = 0; i < w; i++) {
     const angle = player.angle - fov/2 + step*i;
-    let dist = 0, hit = false, cellValue = 1, side = 0;
+    let dist = 0, hit = false, cellValue = 1;
     let rayX = player.x, rayY = player.y;
     const cosA = Math.cos(angle), sinA = Math.sin(angle);
 
-    // DDA-style precise stepping
-    const stepDist = 0.02;
+    // Optimized Step Distance
+    const stepDist = 0.04; 
     while (!hit && dist < 22) {
       dist += stepDist;
       rayX = player.x + cosA * dist;
@@ -1147,43 +1117,41 @@ function castRays() {
     let wallH = Math.min(renderH, 600 / correctedDist);
     if (!isFinite(wallH)) wallH = renderH;
 
-    const wallTop    = (renderH - wallH) / 2;
-    const wallBottom = (renderH + wallH) / 2;
+    const wallTop    = Math.floor((renderH - wallH) / 2);
+    const wallBottom = Math.floor((renderH + wallH) / 2);
 
-    // --- CEILING ---
-    for (let y = 0; y < wallTop; y++) {
+    // --- CEILING (OPTIMIZED LOOP AND DATA PULL) ---
+    for (let y = 0; y < wallTop; y += 2) { 
       const rowDist = (renderH / 2) / Math.max(renderH/2 - y, 0.001);
       const fx = player.x + rowDist * cosA;
       const fy = player.y + rowDist * sinA;
       const tx = ((fx % 1) + 1) % 1;
       const ty = ((fy % 1) + 1) % 1;
       const px = Math.floor(tx * 64), py = Math.floor(ty * 64);
-      try {
-        const cd = ceilTex.getContext('2d').getImageData(Math.max(0,Math.min(63,px)), Math.max(0,Math.min(63,py)), 1, 1).data;
-        const fog = Math.min(1, rowDist / 14);
-        ctx.fillStyle = `rgba(${Math.floor(cd[0]*(1-fog))},${Math.floor(cd[1]*(1-fog))},${Math.floor(cd[2]*(1-fog))},1)`;
-      } catch(e) {
-        ctx.fillStyle = '#0d0a0e';
-      }
-      ctx.fillRect(i, y, 1, 1);
+      const idx = (py * 64 + px) * 4;
+      
+      const fog = Math.min(1, rowDist / 14);
+      const invFog = 1 - fog;
+      
+      ctx.fillStyle = `rgba(${Math.floor(ceilData[idx]*invFog)},${Math.floor(ceilData[idx+1]*invFog)},${Math.floor(ceilData[idx+2]*invFog)},1)`;
+      ctx.fillRect(i, y, 1, 2); // fill 2 pixels height
     }
 
-    // --- FLOOR ---
-    for (let y = wallBottom; y < renderH; y++) {
+    // --- FLOOR (OPTIMIZED LOOP AND DATA PULL) ---
+    for (let y = wallBottom; y < renderH; y += 2) {
       const rowDist = (renderH / 2) / Math.max(y - renderH/2, 0.001);
       const fx = player.x + rowDist * cosA;
       const fy = player.y + rowDist * sinA;
       const tx = ((fx % 1) + 1) % 1;
       const ty = ((fy % 1) + 1) % 1;
       const px = Math.floor(tx * 64), py = Math.floor(ty * 64);
-      try {
-        const fd = floorTex.getContext('2d').getImageData(Math.max(0,Math.min(63,px)), Math.max(0,Math.min(63,py)), 1, 1).data;
-        const fog = Math.min(1, rowDist / 10);
-        ctx.fillStyle = `rgba(${Math.floor(fd[0]*(1-fog))},${Math.floor(fd[1]*(1-fog))},${Math.floor(fd[2]*(1-fog))},1)`;
-      } catch(e) {
-        ctx.fillStyle = '#111';
-      }
-      ctx.fillRect(i, y, 1, 1);
+      const idx = (py * 64 + px) * 4;
+      
+      const fog = Math.min(1, rowDist / 10);
+      const invFog = 1 - fog;
+      
+      ctx.fillStyle = `rgba(${Math.floor(floorData[idx]*invFog)},${Math.floor(floorData[idx+1]*invFog)},${Math.floor(floorData[idx+2]*invFog)},1)`;
+      ctx.fillRect(i, y, 1, 2); // fill 2 pixels height
     }
 
     // --- WALL ---
@@ -1249,7 +1217,6 @@ function updateEnemies() {
     const dist = Math.hypot(dx, dy);
     const moveDist = Math.max(dist, 0.001);
 
-    // Melee
     if (!cfg.isTurret && dist < 0.8 && e.meleeCooldown <= 0) {
       player.health -= cfg.meleeDamage;
       player.health = Math.max(0, player.health);
@@ -1257,7 +1224,6 @@ function updateEnemies() {
     }
     if (e.meleeCooldown > 0) e.meleeCooldown--;
 
-    // Separation
     const minSep = 0.6;
     if (dist < minSep) {
       const push = (minSep - dist) * 0.5;
@@ -1265,7 +1231,6 @@ function updateEnemies() {
       if (mxValid(nx, ny) && map[Math.floor(ny)][Math.floor(nx)] === 0) { e.x = nx; e.y = ny; }
     }
 
-    // AI state
     if (canSee(e.x, e.y, player.x, player.y)) { e.state = 'chase'; e.stateTimer = 120; }
     else if (e.stateTimer > 0) e.stateTimer--;
     else e.state = 'idle';
@@ -1329,7 +1294,6 @@ function drawEnemies() {
     size *= Math.pow(Math.min(1, 10/dist), 0.8);
     size = Math.max(size, 24);
 
-    // Shadow
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath();
     ctx.ellipse(screenX, h/2+size*0.9, size*0.4, size*0.2, 0, 0, Math.PI*2);
@@ -1339,7 +1303,6 @@ function drawEnemies() {
     if (img && img.complete) ctx.drawImage(img, screenX-size/2, h/2-size, size, size*2);
     else { ctx.fillStyle='#8b1a1a'; ctx.fillRect(screenX-size/4, h/2-size, size/2, size*2); }
 
-    // Health bar
     const hbW = size, hbX = screenX-hbW/2, hbY = h/2-size-18;
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
     ctx.fillRect(hbX-1, hbY-1, hbW+2, 12);
@@ -1419,10 +1382,9 @@ function drawBullets() {
       let sz = (h/Math.max(dist,0.1))*0.05;
       sz = Math.min(14, Math.max(2, sz));
       const sx = w/2 + Math.tan(ang)*w/2;
-      // Glowing yellow tracer
       ctx.save();
-      ctx.shadowBlur = 8;
-      ctx.shadowColor = '#ffcc00';
+      // Optimization: Dynamic shadows based on distance
+      if(dist < 15) { ctx.shadowBlur = 8; ctx.shadowColor = '#ffcc00'; }
       ctx.fillStyle = '#ffee44';
       ctx.fillRect(sx-1.5, h/2-sz/2, 3, sz);
       ctx.restore();
@@ -1444,7 +1406,6 @@ function updateEnemyBullets() {
       player.health -= b.damage || 10;
       b.life=0;
       if (player.health < 0) player.health=0;
-      // Damage flash
       damageFlashAlpha = 0.45;
     }
   });
@@ -1465,8 +1426,7 @@ function drawEnemyBullets() {
       sz = Math.min(20, Math.max(2, sz));
       const sx = w/2 + Math.tan(ang)*w/2;
       ctx.save();
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = '#ff6600';
+      if(dist < 15) { ctx.shadowBlur = 10; ctx.shadowColor = '#ff6600'; }
       ctx.fillStyle = '#ff8833';
       ctx.fillRect(sx-2, h/2-sz/2, 4, sz);
       ctx.restore();
@@ -1493,7 +1453,8 @@ function drawSprite3D(x, y, img, baseSize, minSz, maxSz, glowColor) {
   const sx = w/2 + Math.tan(ang)*w/2;
 
   ctx.save();
-  if (glowColor) { ctx.shadowBlur = 22; ctx.shadowColor = glowColor; }
+  // Optimization: Disable shadows for distant objects
+  if (glowColor && dist < 12) { ctx.shadowBlur = Math.min(22, 60/dist); ctx.shadowColor = glowColor; }
   ctx.drawImage(img, sx-size/2, h/2-size/2, size, size);
   ctx.restore();
 }
@@ -1530,8 +1491,7 @@ function drawCar3D() {
   if (zBuffer[col] < dist - 0.5) return;
   const sz = Math.max(h / Math.max(dist, 0.3) * 1.2, 80);
   ctx.save();
-  ctx.shadowBlur = 30;
-  ctx.shadowColor = '#00ffcc';
+  if (dist < 15) { ctx.shadowBlur = 30; ctx.shadowColor = '#00ffcc'; }
   ctx.drawImage(carImg, sx-sz/2, h/2-sz/2, sz, sz);
   ctx.restore();
 }
@@ -1566,28 +1526,22 @@ function drawTommyGun() {
   ctx.translate(gx, gy);
   ctx.scale(scale, scale);
 
-  // === TOMMY GUN DRAWING ===
-  const gc = ctx; // shorthand
-
-  // Main stock (wood)
+  const gc = ctx; 
   gc.fillStyle = '#3d1a08';
   gc.beginPath();
   gc.roundRect(-180, 30, 160, 32, 6);
   gc.fill();
-  // Stock grain lines
   gc.strokeStyle = 'rgba(80,30,10,0.6)';
   gc.lineWidth = 1;
   for (let i = 0; i < 5; i++) {
     gc.beginPath(); gc.moveTo(-180+i*32, 30); gc.lineTo(-180+i*32+10, 62); gc.stroke();
   }
 
-  // Pistol grip (wood)
   gc.fillStyle = '#4a2010';
   gc.beginPath();
   gc.roundRect(-30, 40, 32, 70, 5);
   gc.fill();
 
-  // Trigger guard
   gc.strokeStyle = '#888';
   gc.lineWidth = 3;
   gc.fillStyle = 'none';
@@ -1597,7 +1551,6 @@ function drawTommyGun() {
   gc.fillStyle = '#888';
   gc.fillRect(-4, 58, 8, 14);
 
-  // Main body / receiver
   gc.fillStyle = '#2a2a2a';
   gc.beginPath();
   gc.roundRect(-80, 10, 220, 36, 4);
@@ -1606,16 +1559,13 @@ function drawTommyGun() {
   gc.beginPath();
   gc.roundRect(-75, 12, 210, 12, 3);
   gc.fill();
-  // Ejection port
   gc.fillStyle = '#111';
   gc.fillRect(60, 14, 24, 10);
-  // Bolt knob
   gc.fillStyle = '#555';
   gc.beginPath();
   gc.arc(72, 12, 6, 0, Math.PI*2);
   gc.fill();
 
-  // Drum magazine (iconic Tommy gun feature)
   gc.fillStyle = '#222';
   gc.beginPath();
   gc.arc(30, 58, 44, 0, Math.PI*2);
@@ -1624,7 +1574,6 @@ function drawTommyGun() {
   gc.beginPath();
   gc.arc(30, 58, 40, 0, Math.PI*2);
   gc.fill();
-  // Drum details
   gc.strokeStyle = '#444';
   gc.lineWidth = 1.5;
   for (let i = 0; i < 12; i++) {
@@ -1643,16 +1592,13 @@ function drawTommyGun() {
   gc.beginPath();
   gc.arc(30, 58, 20, 0, Math.PI*2);
   gc.stroke();
-  // Mag latch
   gc.fillStyle = '#3a3a3a';
   gc.fillRect(20, 12, 20, 18);
 
-  // Barrel
   gc.fillStyle = '#1a1a1a';
   gc.beginPath();
   gc.roundRect(130, 16, 120, 22, 3);
   gc.fill();
-  // Barrel fins (Cutts compensator)
   gc.fillStyle = '#222';
   for (let i = 0; i < 5; i++) {
     gc.fillRect(140 + i*10, 10, 6, 38);
@@ -1666,34 +1612,27 @@ function drawTommyGun() {
     gc.stroke();
   }
 
-  // Front sight
   gc.fillStyle = '#aaa';
   gc.fillRect(234, 12, 4, 12);
-
-  // Rear sight
   gc.fillStyle = '#aaa';
   gc.fillRect(100, 10, 14, 8);
   gc.fillStyle = '#111';
   gc.fillRect(104, 12, 6, 5);
 
-  // Foregrip / pistol grip front
   gc.fillStyle = '#4a2010';
   gc.beginPath();
   gc.roundRect(140, 38, 28, 58, 4);
   gc.fill();
 
-  // Metallic sheen on barrel
   gc.fillStyle = 'rgba(255,255,255,0.05)';
   gc.beginPath();
   gc.roundRect(130, 16, 120, 8, 2);
   gc.fill();
 
-  // Muzzle flash
   if (muzzleFlash > 0) {
     const flashAlpha = muzzleFlash / 4;
     gc.save();
     gc.globalAlpha = flashAlpha;
-    // Outer glow
     const flGrad = gc.createRadialGradient(252, 27, 0, 252, 27, 35);
     flGrad.addColorStop(0, '#ffffff');
     flGrad.addColorStop(0.3, '#ffdd44');
@@ -1701,7 +1640,6 @@ function drawTommyGun() {
     flGrad.addColorStop(1, 'transparent');
     gc.fillStyle = flGrad;
     gc.beginPath(); gc.arc(252, 27, 35, 0, Math.PI*2); gc.fill();
-    // Star flash
     gc.fillStyle = '#fff';
     for (let i = 0; i < 6; i++) {
       gc.save();
@@ -1778,7 +1716,6 @@ function checkCarEscape() {
 // MOVEMENT
 // ============================================================
 function movePlayer() {
-  // Rotation
   if (keys['ArrowLeft'])  player.angle -= 0.038;
   if (keys['ArrowRight']) player.angle += 0.038;
   player.angle += mouseDelta * (0.0008 + sensitivity * 0.0002);
@@ -1797,32 +1734,26 @@ function movePlayer() {
 }
 
 // ============================================================
-// HUD (Canvas-based)
+// HUD
 // ============================================================
 function drawHUD() {
   const w = hudCanvas.width, h = hudCanvas.height;
   hudCtx.clearRect(0, 0, w, h);
 
   const barY = h - HUD_H;
-
-  // Background panel - dark paneling with gold trim
   const panelGrad = hudCtx.createLinearGradient(0, barY, 0, h);
   panelGrad.addColorStop(0, '#14090d');
   panelGrad.addColorStop(1, '#0a0508');
   hudCtx.fillStyle = panelGrad;
   hudCtx.fillRect(0, barY, w, HUD_H);
 
-  // Top border — gold line with ornate dots
   hudCtx.strokeStyle = '#c9a227';
   hudCtx.lineWidth = 2;
   hudCtx.beginPath(); hudCtx.moveTo(0, barY); hudCtx.lineTo(w, barY); hudCtx.stroke();
-
-  // Subtle inner bevel
   hudCtx.strokeStyle = 'rgba(201,162,39,0.15)';
   hudCtx.lineWidth = 1;
   hudCtx.beginPath(); hudCtx.moveTo(0, barY+3); hudCtx.lineTo(w, barY+3); hudCtx.stroke();
 
-  // Vertical dividers
   const div1 = w*0.28, div2 = w*0.72;
   hudCtx.strokeStyle = 'rgba(201,162,39,0.2)';
   hudCtx.lineWidth = 1;
@@ -1831,7 +1762,6 @@ function drawHUD() {
 
   hudCtx.textBaseline = 'middle';
 
-  // --- LEFT: ITEMS + LIVES ---
   hudCtx.fillStyle = '#c9a227';
   hudCtx.font = "bold 11px 'Cinzel', serif";
   hudCtx.letterSpacing = '3px';
@@ -1841,7 +1771,6 @@ function drawHUD() {
   hudCtx.font = "bold 38px 'Cinzel', serif";
   hudCtx.fillText(`${collected} / ${items.length}`, 26, barY+62);
 
-  // Lives dots
   hudCtx.fillStyle = '#c9a227';
   hudCtx.font = "bold 11px 'Cinzel', serif";
   hudCtx.fillText('LIVES', 30, barY+90);
@@ -1852,7 +1781,6 @@ function drawHUD() {
     hudCtx.fill();
   }
 
-  // --- CENTER: FACE + GUN ---
   const cx = w/2;
   const faceSize = 82;
   const faceX = cx - faceSize/2;
@@ -1861,23 +1789,19 @@ function drawHUD() {
   if (faceImg.complete && faceImg.naturalWidth > 0) {
     hudCtx.drawImage(faceImg, faceX, faceY, faceSize, faceSize);
   }
-  // Gold frame around face
   hudCtx.strokeStyle = '#c9a227';
   hudCtx.lineWidth = 2;
   hudCtx.strokeRect(faceX-2, faceY-2, faceSize+4, faceSize+4);
-  // Inner bevel
   hudCtx.strokeStyle = 'rgba(201,162,39,0.3)';
   hudCtx.lineWidth = 1;
   hudCtx.strokeRect(faceX+2, faceY+2, faceSize-4, faceSize-4);
 
-  // Corner ornaments
   const corners = [[faceX-2,faceY-2],[faceX+faceSize+2,faceY-2],[faceX-2,faceY+faceSize+2],[faceX+faceSize+2,faceY+faceSize+2]];
   hudCtx.fillStyle = '#c9a227';
   corners.forEach(([cx2,cy2]) => {
     hudCtx.beginPath(); hudCtx.arc(cx2, cy2, 4, 0, Math.PI*2); hudCtx.fill();
   });
 
-  // --- RIGHT: HEALTH ---
   hudCtx.fillStyle = '#c9a227';
   hudCtx.font = "bold 11px 'Cinzel', serif";
   hudCtx.textAlign = 'right';
@@ -1886,14 +1810,12 @@ function drawHUD() {
   const hp = Math.max(0, Math.round(player.health));
   const hpColor = hp > 600 ? '#22cc44' : hp > 300 ? '#ddaa00' : '#cc3333';
 
-  // Health bar
   const hbX = div2+16, hbW = w-div2-44;
   hudCtx.fillStyle = '#111';
   hudCtx.fillRect(hbX, barY+30, hbW, 18);
   hudCtx.fillStyle = hpColor;
   const hbFill = (hp/1000)*hbW;
   hudCtx.fillRect(hbX, barY+30, hbFill, 18);
-  // HP bar border
   hudCtx.strokeStyle = 'rgba(201,162,39,0.4)';
   hudCtx.lineWidth = 1;
   hudCtx.strokeRect(hbX, barY+30, hbW, 18);
@@ -1903,9 +1825,8 @@ function drawHUD() {
   hudCtx.textAlign = 'right';
   hudCtx.fillText(hp, w-28, barY+75);
 
-  hudCtx.textAlign = 'left'; // reset
+  hudCtx.textAlign = 'left';
 
-  // Damage vignette effect
   if (damageFlashAlpha > 0) {
     const flashGrad = hudCtx.createRadialGradient(w/2, (h-HUD_H)/2, 0, w/2, (h-HUD_H)/2, Math.max(w,h)*0.8);
     flashGrad.addColorStop(0, 'rgba(139,26,26,0)');
@@ -2032,12 +1953,6 @@ canvas.addEventListener('click', () => {
   if (gameStarted && !paused) canvas.requestPointerLock();
 });
 
-document.addEventListener('pointerlockchange', () => {
-  if (document.pointerLockElement !== canvas && gameStarted && !gameOver && !gameWin && !paused) {
-    // pointer lock exited — show crosshair hint
-  }
-});
-
 document.addEventListener('mousemove', e => {
   if (document.pointerLockElement === canvas) mouseDelta = e.movementX;
 });
@@ -2063,7 +1978,6 @@ document.addEventListener('keydown', e => {
     shootSound.currentTime = 0; shootSound.loop = true;
     shootSound.play().catch(()=>{});
   }
-  // Prevent arrow key scrolling
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
 });
 
@@ -2111,7 +2025,6 @@ document.getElementById('startBtn').addEventListener('click', () => {
   document.getElementById('crosshair').style.display = 'block';
 
   bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
-  // Unlock sounds
   [sndRevolver, sndShotgun, sndTommy, sndTurret, itemPickupSound, healthPickupSound].forEach(s => {
     s.play().then(()=>{ s.pause(); s.currentTime=0; }).catch(()=>{});
   });
@@ -2130,7 +2043,6 @@ document.getElementById('backBtn').addEventListener('click', () => {
   document.getElementById('mainMenu').style.display = 'flex';
 });
 
-// Unlock audio on first interaction
 document.addEventListener('click', function unlockAudio() {
   if (!menuActive) return;
   playMenuMusic();
@@ -2175,7 +2087,6 @@ function loop() {
     checkEndConditions();
   }
 
-  // Render
   castRays();
   drawCar3D();
   drawItems3D();
@@ -2196,7 +2107,6 @@ function loop() {
 runIntro();
 loop();
 
-// Handle resize
 window.addEventListener('resize', () => {
   resizeAll();
   resizeIntro();
