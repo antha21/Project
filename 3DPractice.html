@@ -15,21 +15,29 @@ body {
 }
 canvas { display: block; }
 
-/* Cinematic Vignette Overlay */
+/* Cinematic Vignette Overlay (Sits above 3D view, behind status bar) */
 body::after {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 110px; /* Above status bar */
-    background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 110px;
+    background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%);
     pointer-events: none; z-index: 5;
 }
 
-/* --- Messages --- */
+/* --- Messages & HUD --- */
 #msg { 
     position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
-    color: #f5e1b7; font-family: 'Georgia', serif; font-size: 32px; 
-    text-shadow: 0 0 15px #000, 0 0 10px #c99d4d; z-index: 15; 
-    background: rgba(20, 5, 5, 0.85); padding: 15px 30px; 
+    color: #f5e1b7; font-size: 32px; z-index: 15; 
+    background: rgba(20, 5, 5, 0.9); padding: 15px 30px; 
     border: 2px solid #c99d4d; border-radius: 5px; text-align: center;
-    display: none; text-transform: uppercase; letter-spacing: 2px;
+    text-transform: uppercase; letter-spacing: 2px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.9); display: none; 
+}
+
+#objectives {
+    position: absolute; top: 20px; right: 20px; 
+    background: rgba(20, 5, 5, 0.85); border: 2px solid #c99d4d; 
+    padding: 15px; color: #fff; font-size: 18px; line-height: 1.6; 
+    z-index: 10; border-radius: 5px; display: none;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
 /* Minimalist Crosshair */
@@ -37,18 +45,23 @@ body::after {
     position: absolute; top: calc(50% - 55px); left: 50%; width: 4px; height: 4px;
     background: rgba(245, 225, 183, 0.9); border-radius: 50%;
     transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none;
-    box-shadow: 0 0 4px #000;
+    box-shadow: 0 0 6px #000;
 }
 
-/* --- Screens --- */
+/* --- Screens & Menus --- */
 .screen {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     z-index: 20; color: #f5e1b7; text-align: center;
 }
 
-#initScreen { background: #050201; z-index: 40; cursor: pointer; }
-.pulse-text { font-size: 24px; animation: pulse 2s infinite; letter-spacing: 3px; color: #c99d4d; }
+/* Authentic Loading Screen */
+#initScreen { 
+    background: linear-gradient(to bottom, rgba(15,5,0,0.95), rgba(5,0,0,0.98)), url("Connect4/Screenshot 2025-12-21 192238.png") no-repeat center center;
+    background-size: cover; z-index: 40; cursor: pointer; 
+}
+#loadingUI { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+.pulse-text { font-size: 26px; animation: pulse 2s infinite; letter-spacing: 4px; color: #c99d4d; text-shadow: 0 0 10px #000; }
 
 #splashScreen { background: #050201; z-index: 30; display: none; }
 .fade-text { font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards; letter-spacing: 5px; text-transform: uppercase; text-shadow: 0 0 15px #c99d4d; }
@@ -94,7 +107,7 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
 }
 .instructions span { color: #c99d4d; font-weight: bold; }
 
-@keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+@keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
 @keyframes splashFade { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 @keyframes titleDrop { 0% { transform: translateY(-50px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
 @keyframes buttonsSlideUp { 0% { transform: translateY(30px); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
@@ -102,17 +115,20 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
 </head>
 <body>
 
-<!-- Browser Autoplay Bypass Screen -->
 <div id="initScreen" class="screen">
-    <div class="pulse-text">CLICK TO ENTER THE FAMILY</div>
+    <div id="loadingUI">
+        <div style="font-size: 24px; letter-spacing: 4px; color: #f5e1b7; text-shadow: 0 0 10px #000;">INITIALIZING ENGINE...</div>
+        <div style="width: 350px; height: 12px; background: rgba(0,0,0,0.8); border: 2px solid #c99d4d; border-radius: 6px; overflow: hidden;">
+            <div id="loadingBar" style="width: 0%; height: 100%; background: #c99d4d; transition: width 2.5s ease;"></div>
+        </div>
+    </div>
+    <div id="clickToEnter" class="pulse-text" style="display:none;">CLICK TO ENTER THE FAMILY</div>
 </div>
 
-<!-- Intro Splash -->
 <div id="splashScreen" class="screen">
     <h1 class="fade-text">DeShrimpo Games Presents</h1>
 </div>
 
-<!-- Title Screen -->
 <div id="titleScreen" class="screen menu-bg">
     <div class="menuTitle">The DogMother 3D</div>
     <div class="menuSubtitle">An Offer You Can’t Escape</div>
@@ -122,7 +138,6 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     </div>
 </div>
 
-<!-- How to Play Page -->
 <div id="howToScreen" class="screen menu-bg">
     <h1 style="font-size: 48px; border-bottom: 1px solid #c99d4d; padding-bottom: 10px; margin-bottom:10px;">HOW TO PLAY</h1>
     <div class="instructions">
@@ -137,7 +152,6 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     <button id="backBtn" style="width: 320px;">Return to Menu</button>
 </div>
 
-<!-- Pause Menu -->
 <div id="pauseScreen" class="screen">
     <h1>PAUSED</h1>
     <div class="menu-buttons" style="opacity:1; animation:none;">
@@ -147,12 +161,10 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
     </div>
 </div>
 
-<!-- Game Canvas & HUD -->
 <div id="crosshair"></div>
 <div id="msg"></div>
 <canvas id="game"></canvas>
 
-<!-- Audio -->
 <audio id="bgMusic" loop><source src="Connect4_3\Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg"></audio>
 <audio id="shootSound"><source src="Connect4\ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg"></audio>
 <audio id="enemyGunSound"><source src="Magnum 44 sound.mp4" type="audio/mp4"></audio>
@@ -169,6 +181,7 @@ button:hover { background: #c99d4d; color: #0a0a0a; box-shadow: 0 0 25px rgba(20
 // Engine & UI Logic
 // ========================
 let gameStarted = false, paused = false, gameOver = false, gameWin = false, endTimer = 0;
+let initReady = false;
 const STATUS_BAR_HEIGHT = 110;
 
 const initScreen = document.getElementById("initScreen");
@@ -178,6 +191,7 @@ const howToScreen = document.getElementById("howToScreen");
 const pauseScreen = document.getElementById("pauseScreen");
 const crosshair = document.getElementById("crosshair");
 const msg = document.getElementById("msg");
+const objectivesDiv = document.getElementById("objectives");
 const bgMusic = document.getElementById("bgMusic");
 const menuMusic = document.getElementById("menuMusic");
 
@@ -197,26 +211,36 @@ const sndRevolverTalk = new Audio("Connect4/RevolverTalk.mp3");
 const sndRobotDeath = new Audio("Connect4/RobotDeath.mp3");
 const oneUpSound = new Audio("Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3");
 
-// Volumes
+// Audio Levels
 sndTommyTalk.volume = 1.0; sndTurretLaugh.volume = 0.8; sndTurretDeath.volume = 0.9;
 sndDirectHit.volume = 0.6; sndRevolverTalk.volume = 1.0; sndRobotDeath.volume = 0.9;
 sndRevolver.volume = 1.0; sndShotgun.volume = 0.65; sndTommy.volume = 0.75; sndTurret.volume = 0.95;
 
-// Boot Sequence with Corrected Music Timing
+// Load Sequence
+window.onload = () => {
+    setTimeout(() => { document.getElementById("loadingBar").style.width = "100%"; }, 100);
+    setTimeout(() => {
+        document.getElementById("loadingUI").style.display = "none";
+        document.getElementById("clickToEnter").style.display = "block";
+        initReady = true;
+    }, 2600);
+};
+
+// Boot Sequence
 initScreen.onclick = () => {
+    if (!initReady) return;
     initScreen.style.display = "none";
     splashScreen.style.display = "flex";
     
-    // Wait for the 4-second splash animation to complete
+    // Wait for the splash to complete, then reveal Title and drop the music
     setTimeout(() => {
         splashScreen.style.display = "none";
         titleScreen.style.display = "flex";
-        // Play music precisely when the title appears
         menuMusic.play().catch(()=>{}); 
     }, 4000);
 };
 
-// Menus
+// Menu Actions
 document.getElementById("startBtn").onclick = startGame;
 document.getElementById("howToBtn").onclick = () => { titleScreen.style.display = "none"; howToScreen.style.display = "flex"; };
 document.getElementById("backBtn").onclick = () => { howToScreen.style.display = "none"; titleScreen.style.display = "flex"; };
@@ -231,7 +255,7 @@ function startGame() {
     
     stopAllSounds(); 
 
-    // Directly Setup Fresh Game State
+    // Setup Fresh Game State
     player = { x: 3.5, y: 3.5, angle: 0, speed: 0.070, health: 1000, ammo: 50, maxAmmo: 200, lives: 3 };
     currentMag = 50; isReloading = false; reloadTimer = 0;
     bullets = []; enemyBullets = [];
@@ -241,6 +265,8 @@ function startGame() {
     gameStarted = true; paused = false; gameOver = false; gameWin = false; endTimer = 0;
     
     crosshair.style.display = "block";
+    objectivesDiv.style.display = "block";
+    
     bgMusic.currentTime = 0; bgMusic.play().catch(()=>{});
     
     showMessage("CLICK TO LOCK MOUSE", 3000);
@@ -251,7 +277,7 @@ function resetToMenu() {
     stopAllSounds();
     gameStarted = false; gameOver = false; gameWin = false; endTimer = 0;
     bullets = []; enemyBullets = [];
-    crosshair.style.display = "none"; msg.style.display = "none";
+    crosshair.style.display = "none"; msg.style.display = "none"; objectivesDiv.style.display = "none";
     if (document.pointerLockElement === canvas) document.exitPointerLock?.();
     
     pauseScreen.style.display = "none";
@@ -275,13 +301,13 @@ function togglePause() {
 
 function stopAllSounds() {
     bgMusic.pause(); shootSound.pause(); shootSound.currentTime=0;
-    [sndRevolver, sndShotgun, sndTommy, sndTurret].forEach(s => { s.pause(); s.currentTime=0; s.loop=false; });
+    [sndRevolver, sndShotgun, sndTommy, sndTurret, carEscapeSound].forEach(s => { s.pause(); s.currentTime=0; s.loop=false; });
     enemies.forEach(e => e.shootingSound = false);
 }
 
 function showMessage(text, duration = 2000) { 
     msg.innerText = text; msg.style.display = "block";
-    if (text !== "ESCAPE SUCCESSFUL!" && text !== "GAME OVER") {
+    if (text !== "A CLEAN GETAWAY" && text !== "WACKED") {
         setTimeout(() => {if(msg.innerText === text) msg.style.display = "none";}, duration); 
     }
 }
@@ -368,8 +394,6 @@ const MAP_W = map[0].length, MAP_H = map.length;
 
 let player, enemies, bullets, enemyBullets, items, healthPacks, oneUps, car;
 let keys = {}, mouseDelta = 0, shooting = false, fireCooldown = 0;
-let magSize = 50, currentMag = 50, isReloading = false, reloadTimer = 0;
-let collectedMessageShown = false, carWarningShown = false;
 let zBuffer = [];
 
 let enemiesTemplate = [
@@ -391,12 +415,12 @@ function resetPickups() {
 }
 
 // ========================
-// Input
+// Input Control
 // ========================
 addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
     if (e.key.toLowerCase() === "p") togglePause();
-    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused) triggerReload();
+    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused && !gameWin) triggerReload();
     if ((e.code === "Space" || e.key === " ") && canShoot()) { shooting = true; }
 });
 addEventListener("keyup", e => {
@@ -412,9 +436,8 @@ document.addEventListener("mousedown", e => {
 });
 document.addEventListener("mouseup", e => { if (e.button === 0) { shooting = false; shootSound.pause(); shootSound.currentTime=0; } });
 
-function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted; }
+function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted && !gameWin; }
 function triggerReload() { isReloading = true; reloadTimer = 60; shooting = false; shootSound.pause(); }
-
 function mxValid(x, y){ const mx = Math.floor(x), my = Math.floor(y); return !(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H); }
 
 function movePlayer(){
@@ -549,7 +572,7 @@ function drawSprites(){
 
 function drawBullets(){
     const w = canvas.width, h = viewHeight;
-    // Player Tracer Bullets
+    // Player Tracers
     bullets.forEach(b=>{
         let dx = b.x - player.x, dy = b.y - player.y; let dist = Math.hypot(dx, dy);
         let ang = Math.atan2(dy, dx) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang)); 
@@ -563,7 +586,7 @@ function drawBullets(){
         }
     });
 
-    // Enemy Tracer Bullets
+    // Enemy Tracers
     enemyBullets.forEach(b => {
         let dx = b.x - player.x, dy = b.y - player.y; let dist = Math.hypot(dx, dy);
         let ang = Math.atan2(dy, dx) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
@@ -592,11 +615,10 @@ function drawGun(){
     ctx.translate(w/2, h + reloadOffset);
     if(isReloading) ctx.rotate(reloadShake);
 
-    // Tommy Gun Modeling
-    ctx.fillStyle="#1a1a1a"; ctx.fillRect(-8, -250, 16, 160); // Barrel
-    ctx.fillStyle="#4a2511"; ctx.fillRect(-12, -180, 24, 70); // Wood Foregrip
-    ctx.fillStyle="#2a2a2a"; ctx.fillRect(-20, -100, 40, 100); // Body
-    ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(0, -90, 45, 0, Math.PI*2); ctx.fill(); // Drum Mag
+    ctx.fillStyle="#1a1a1a"; ctx.fillRect(-8, -250, 16, 160); 
+    ctx.fillStyle="#4a2511"; ctx.fillRect(-12, -180, 24, 70); 
+    ctx.fillStyle="#2a2a2a"; ctx.fillRect(-20, -100, 40, 100); 
+    ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(0, -90, 45, 0, Math.PI*2); ctx.fill(); 
     ctx.strokeStyle="#333"; ctx.lineWidth=3; ctx.stroke(); 
     
     if(shooting && fireCooldown > 4 && !isReloading){ 
@@ -610,19 +632,19 @@ function drawStatusBar() {
     const w = canvas.width, h = canvas.height;
     const barY = h - STATUS_BAR_HEIGHT;
 
-    ctx.fillStyle = "#1a0a0a"; ctx.fillRect(0, barY, w, STATUS_BAR_HEIGHT);
+    ctx.fillStyle = "#0a0502"; ctx.fillRect(0, barY, w, STATUS_BAR_HEIGHT);
     ctx.strokeStyle = "#c99d4d"; ctx.lineWidth = 4; ctx.strokeRect(0, barY, w, STATUS_BAR_HEIGHT);
 
-    ctx.textBaseline = "middle"; ctx.font = "bold 26px Georgia"; 
+    ctx.textBaseline = "middle"; ctx.font = "bold 24px Georgia"; 
     
     const collected = items.filter(i => i.collected).length;
     ctx.fillStyle = "#c99d4d"; ctx.fillText(`STASH: ${collected}/${items.length}`, 30, barY + 35);
     ctx.fillText(`DRUM: ${isReloading ? 'RELOADING' : currentMag}`, 30, barY + 75);
 
-    ctx.fillStyle = "#ff4444"; ctx.fillText(`HEALTH: ${Math.max(0, Math.round(player.health))}`, w - 240, barY + 35);
-    ctx.fillStyle = "#44ff44"; ctx.fillText(`LIVES: ${player.lives}`, w - 240, barY + 75);
+    ctx.fillStyle = "#ff4444"; ctx.fillText(`HEALTH: ${Math.max(0, Math.round(player.health))}`, w - 220, barY + 35);
+    ctx.fillStyle = "#44ff44"; ctx.fillText(`LIVES: ${player.lives}`, w - 220, barY + 75);
 
-    const faceSize = 90, faceX = w / 2 - faceSize / 2, faceY = barY + 10;
+    const faceSize = 85, faceX = w / 2 - faceSize / 2, faceY = barY + 12;
     const faceImg = shooting && currentMag > 0 ? faceFire : faceIdle;
     if (faceImg.complete) ctx.drawImage(faceImg, faceX, faceY, faceSize, faceSize);
     ctx.strokeStyle = "#c99d4d"; ctx.lineWidth = 3; ctx.strokeRect(faceX - 2, faceY - 2, faceSize + 4, faceSize + 4);
@@ -713,7 +735,6 @@ function updateGame(){
             }
         }
         e.wasSeeingPlayer = seesPlayer;
-        e.dist = dist; 
     });
 
     enemyBullets.forEach(b=>{
@@ -757,32 +778,22 @@ function updateGame(){
         }
     }
 
-    checkCarEscape();
-}
-
-function checkCarEscape() {
     const distToCar = Math.hypot(player.x - (car.x + 0.5), player.y - (car.y + 0.5));
     if (distToCar < 1.0) {
         if (!items.every(i => i.collected)) {
             if(!carWarningShown) { showMessage("COLLECT ALL STASH BEFORE LEAVING!", 2000); carWarningShown = true; }
         } else if (!gameWin) {
             gameWin = true;
-            
             crosshair.style.display = "none";
-            showMessage("A CLEAN GETAWAY!", 999999); 
+            objectivesDiv.style.display = "none";
+            showMessage("A CLEAN GETAWAY", 999999); 
             
             carEscapeSound.currentTime = 0; carEscapeSound.play().catch(()=>{});
             paused = true; document.exitPointerLock(); stopAllSounds();
             
-            carEscapeSound.onended = () => {
-                titleScreen.style.display = "flex"; 
-                resetToMenu(); 
-                carEscapeSound.onended = null; 
-            };
+            carEscapeSound.onended = () => { resetToMenu(); carEscapeSound.onended = null; };
         }
-    } else {
-        carWarningShown = false;
-    }
+    } else { carWarningShown = false; }
 }
 
 function handleEnemyDeath(e){
@@ -791,11 +802,13 @@ function handleEnemyDeath(e){
     else { sndRobotDeath.currentTime=0; sndRobotDeath.play().catch(()=>{}); }
 }
 
-function stopEnemySound(e){
-    if(e.shootingSound){
-        let snd = (e.type==="shotgun")?sndShotgun : (e.type==="tommy")?sndTommy : sndTurret;
-        snd.pause(); snd.currentTime = 0; snd.loop = false; e.shootingSound = false;
-    }
+function updateObjectivesHUD() {
+    const collected = items.filter(i => i.collected).length;
+    objectivesDiv.innerHTML = `
+        <b>THE HIT LIST</b><br><br>
+        <span style="color:${collected === items.length ? '#ffcc66' : '#fff'}">${collected === items.length ? '✔' : '☐'} Secure the Stash (${collected}/${items.length})</span><br>
+        <span style="color:${gameWin ? '#ffcc66' : '#fff'}">${gameWin ? '✔' : '☐'} Escape Out Back</span>
+    `;
 }
 
 // ========================
@@ -815,18 +828,17 @@ function loop(){
     
     castRays();
     drawSprites();
-    drawBullets();
-    if(!gameOver && !gameWin) drawGun();
+    if(!gameOver && !gameWin) { drawBullets(); drawGun(); }
     drawStatusBar();
+    updateObjectivesHUD();
 
-    // End overlays
     if(gameOver) {
         const w = canvas.width, h = canvas.height; ctx.save(); ctx.textAlign="center";
         ctx.fillStyle="rgba(0,0,0,0.85)"; ctx.fillRect(0,0,w,h);
         ctx.font="72px Georgia";
         ctx.fillStyle="#f44"; ctx.fillText("WACKED", w/2, h/2-10); ctx.font="24px Georgia"; ctx.fillText("Returning to hideout...", w/2, h/2+40);
         ctx.restore();
-        endTimer--; if(endTimer <= 0) { titleScreen.style.display = "flex"; resetToMenu(); }
+        endTimer--; if(endTimer <= 0) { resetToMenu(); }
     }
 }
 loop();
