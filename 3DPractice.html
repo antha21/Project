@@ -2,2000 +2,734 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>DOOM-Like Maze</title>
+<title>The Mob Escape 3D</title>
 <style>
-/* --- General Styles --- */
-body { 
-    margin: 0; 
-    overflow: hidden; 
-    background: #0a0a0a; /* dark, moody background */
-    font-family: 'Cinzel', 'Georgia', serif; /* classy serif font */
-    color: #f5e1b7; /* gold-ish text for mafia style */
-}
-canvas { 
-    display: block; 
-}
+    /* ================= CORE STYLES & VIGNETTE ================= */
+    body { 
+        margin:0; overflow:hidden; background:#050201; 
+        font-family: 'Georgia', 'Times New Roman', serif; user-select: none; 
+    }
+    canvas { display:block; }
+    
+    /* Cinematic Vignette Overlay */
+    body::after {
+        content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
+        pointer-events: none; z-index: 15;
+    }
 
-/* --- HUD & Messages --- */
-#hud { 
-    position: absolute; 
-    top: 10px; 
-    left: 10px; 
-    color: #f5e1b7; 
-    font-family: 'Consolas', monospace; 
-    font-size: 20px; 
-    z-index: 10; 
-}
-#msg { 
-    position: absolute; 
-    top: 20px; 
-    left: 20px; 
-    color: #f5e1b7; 
-    font-family: 'Consolas', monospace; 
-    font-size: 22px; 
-    text-shadow: 0 0 12px #c99d4d; 
-    z-index: 9; 
-}
+    /* ================= IN-GAME UI ================= */
+    #hud { 
+        position:absolute; bottom:20px; left:20px; 
+        color:#ffcc66; font-size:24px; z-index:16; 
+        background: rgba(20, 5, 5, 0.8); 
+        padding: 10px 20px; border: 2px solid #ffcc66; border-radius: 3px;
+        box-shadow: 0 0 10px rgba(255, 204, 102, 0.3);
+        display: none; letter-spacing: 2px;
+    }
+    
+    #msg { 
+        position:absolute; top:30%; left:50%; transform: translate(-50%, -50%);
+        color:#ffcc66; font-size:28px; z-index:16; 
+        text-align: center; background: rgba(20, 5, 5, 0.9);
+        padding: 20px 40px; border: 2px solid #ffcc66; border-radius: 5px;
+        text-transform: uppercase; display: none; box-shadow: 0 0 20px rgba(0,0,0,1);
+    }
+    
+    #objectives {
+        position:absolute; top:20px; right:20px; 
+        background: rgba(20, 5, 5, 0.8); border: 2px solid #ffcc66; 
+        padding:15px; color:#fdf5e6; font-size:18px; line-height:1.6; 
+        z-index:16; border-radius: 3px; display: none; box-shadow: 0 0 10px rgba(255, 204, 102, 0.3);
+    }
+    
+    /* Minimalist Crosshair */
+    #crosshair {
+        position: absolute; top: 50%; left: 50%; width: 4px; height: 4px;
+        background: rgba(255, 204, 102, 0.9); border-radius: 50%;
+        transform: translate(-50%, -50%); pointer-events: none; z-index: 16; display: none;
+        box-shadow: 0 0 4px #000;
+    }
 
-/* --- Start Menu --- */
-#startMenu {
-    position: absolute;
-    inset: 0;
+    /* ================= MENUS & SCREENS ================= */
+    .screen {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        z-index: 20; color: #ffcc66; text-align: center;
+    }
+    
+    #initScreen { background: #050201; z-index: 40; cursor: pointer; }
+    .pulse-text { font-size: 24px; animation: pulse 2s infinite; letter-spacing: 3px; color: #aaa; }
 
-    background:
-        linear-gradient(
-            rgba(0,0,0,0.75),
-            rgba(0,0,0,0.85)
-        ),
-        url("Connect4/Screenshot 2025-12-21 192238.png");
+    #splashScreen { background: #050201; z-index: 30; display: none; transition: opacity 1.5s ease; }
+    .fade-text { font-size: 40px; opacity: 0; animation: splashFade 4.5s ease forwards; letter-spacing: 5px; text-transform: uppercase; color: #fff; }
 
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    .menu-bg {
+        background: linear-gradient(to bottom, rgba(20,5,0,0.8), rgba(10,2,0,0.95)), url("Connect4/SpaceB.jpg") no-repeat center center;
+        background-size: cover; display: none;
+    }
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
+    #titleScreen h1 {
+        font-size: 70px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 4px;
+        margin-top: -30px; text-shadow: 3px 3px 0 #000, 0 0 20px rgba(255,204,102,0.5);
+        border-bottom: 2px solid #ffcc66; padding-bottom: 10px;
+    }
+    
+    #howToScreen h1 { font-size: 40px; margin-bottom: 10px; border-bottom: 1px solid #ffcc66; padding-bottom: 10px; }
 
-    text-align: center;
-    color: #f5e1b7;
-    z-index: 20;
+    .menu-buttons { display:flex; flex-direction:column; gap:15px; width: 320px; }
+    
+    button {
+        font-family: 'Georgia', serif; font-size: 20px; padding: 12px;
+        background: linear-gradient(to bottom, #4a1515, #2a0505); 
+        border: 2px solid #ffcc66; color: #ffcc66; font-weight: bold;
+        cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.6); transition: all 0.2s ease;
+    }
+    button:hover { background: linear-gradient(to bottom, #6a1a1a, #3a0a0a); transform: scale(1.03); box-shadow: 0 0 15px rgba(255,204,102,0.4); }
 
-    box-shadow:
-        inset 0 0 120px rgba(0,0,0,0.9),
-        inset 0 0 300px rgba(0,0,0,0.6);
-}
+    #pauseScreen { background: rgba(10, 2, 2, 0.9); display: none; z-index: 25; }
+    #pauseScreen h1 { font-size: 50px; color: #ffcc66; margin-bottom: 30px; letter-spacing: 4px; }
 
+    .instructions {
+        font-size: 18px; max-width: 600px; text-align: center; line-height: 1.6;
+        background: rgba(20, 5, 5, 0.8); padding: 20px; border: 1px solid #ffcc66;
+        border-radius: 4px; margin-bottom: 20px; color: #fdf5e6;
+    }
+    .instructions span { color: #ffcc66; font-weight: bold; }
 
-#startMenu h1 {
-    font-size: 60px;
-    font-weight: 900;
-    text-shadow: 0 0 10px #c99d4d, 0 0 20px #000;
-    margin-bottom: 30px;
-    letter-spacing: 3px;
-}
-
-button {
-    font-size: 26px;
-    padding: 14px 40px;
-    background: rgba(10,10,10,0.85);
-    color: #f5e1b7;
-    border: 2px solid #c99d4d;
-    cursor: pointer;
-    margin-top: 18px;
-    border-radius: 8px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 3px;
-    transition: all 0.25s ease;
-    box-shadow: 0 0 20px rgba(0,0,0,0.6);
-}
-
-button:hover {
-    background: #c99d4d;
-    color: #0a0a0a;
-    box-shadow: 0 0 25px rgba(201,157,77,0.9);
-    transform: translateY(-2px);
-}
-
-.small { 
-    font-size: 18px; 
-    margin-top: 12px; 
-    color: #d4b87c; 
-    cursor: default; 
-}
-
-/* --- How to Play Page --- */
-#howToPage {
-    position: absolute;
-    inset: 0;
-
-    background:
-        linear-gradient(
-            rgba(0,0,0,0.85),
-            rgba(0,0,0,0.9)
-        ),
-        url("Connect4/Screenshot 2025-12-21 192238.png");
-
-    background-size: cover;
-    background-position: center;
-
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: #f5e1b7;
-    z-index: 25;
-}
-
-
-#howToPage h2 {
-    font-size: 48px;
-    margin-bottom: 24px;
-    text-shadow: 0 0 8px #c99d4d;
-}
-
-#howToPage p {
-    font-size: 22px;
-    line-height: 1.6;
-    max-width: 600px;
-    margin: 0 auto 32px auto;
-    text-shadow: 0 0 4px #000;
-}
-
-#howToPage button {
-    font-size: 24px;
-    padding: 12px 28px;
-}
-
-/* --- Center Text --- */
-.centerText {
-    position: absolute; 
-    left: 50%; 
-    top: 50%; 
-    transform: translate(-50%, -50%);
-    color: #f5e1b7; 
-    font-family: 'Cinzel', serif; 
-    font-size: 64px; 
-    text-shadow: 0 0 20px #000, 0 0 15px #c99d4d; 
-    z-index: 30;
-}
-
-.menuTitle {
-    font-family: 'Cinzel', serif;
-    font-size: 78px;
-    font-weight: 900;
-    letter-spacing: 6px;
-    color: #f5e1b7;
-    text-shadow:
-        0 0 12px rgba(201,157,77,0.6),
-        0 0 40px rgba(0,0,0,0.9);
-    margin-bottom: 18px;
-}
-
-.menuSubtitle {
-    font-size: 18px;
-    letter-spacing: 4px;
-    margin-top: 8px;
-    color: #c99d4d;
-    text-transform: uppercase;
-    opacity: 0.9;
-}
-
+    @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    @keyframes splashFade { 0% { opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
 </style>
 </head>
 <body>
 
-<!-- --- Start Menu --- -->
-<div id="startMenu">
-    <div class="menuTitle">
-    The DogMother 3D
-    <div class="menuSubtitle">An Offer You Can’t Escape</div>
+<canvas id="game"></canvas>
+
+<div id="hud"></div>
+<div id="objectives"></div>
+<div id="msg"></div>
+<div id="crosshair"></div>
+
+<div id="initScreen" class="screen">
+    <div class="pulse-text">CLICK TO ENTER</div>
 </div>
 
-    <button id="startBtn">START</button>
-    <button id="howToBtn">HOW TO PLAY</button>
+<div id="splashScreen" class="screen">
+    <h1 class="fade-text">DeShrimpo Games Presents</h1>
 </div>
 
-<!-- --- How to Play Page --- -->
-<div id="howToPage" style="display:none;">
-    <div class="centerText" style="font-size:32px; max-width:600px; text-align:center;">
-        <h2>HOW TO PLAY</h2>
-        <p> You come to me to play my video game without bringing me any dog treats. After becoming the new DogMother for the DeShrimpo Crime Family in Scotland, the Squirrel Crime Family took action and stole 6 valuable items of Daisy's and now she needs to get them back. Collect all items and reach the getaway car to win. Watch out for enemies!</p>
-	<p>Move with the ARROW keys.<br>
-        Strafe with A / D.<br>
-        Shoot with SPACEBAR.<br>
-	Pause with P.</p>
-        <button id="backBtn">BACK</button>
+<div id="titleScreen" class="screen menu-bg">
+    <h1>La Famiglia Escape</h1>
+    <div class="menu-buttons">
+        <button id="startBtn">Enter the Club</button>
+        <button id="howToBtn">How to Play</button>
     </div>
 </div>
 
-<!-- --- HUD & Messages --- -->
-<div id="hud"></div>
-<div id="msg"></div>
+<div id="howToScreen" class="screen menu-bg">
+    <h1>HOW TO PLAY</h1>
+    <div class="instructions">
+        <p>The rival family has surrounded you in the club. Eliminate the mobsters, find the boss's key, and escape through the back door!</p>
+        <br>
+        <p><span>W, A, S, D</span> → Move & Strafe</p>
+        <p><span>Mouse</span> → Look Around</p>
+        <p><span>Left Click / Space</span> → Fire Tommy Gun</p>
+        <p><span>R</span> → Reload Drum</p>
+        <p><span>P</span> → Pause Menu</p>
+    </div>
+    <button id="backBtn" style="width: 320px;">Return to Menu</button>
+</div>
 
-<!-- --- Game Canvas --- -->
-<canvas id="game"></canvas>
-
-<!-- --- Audio --- -->
-<audio id="bgMusic" loop>
-    <source src="Connect4_3\Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="shootSound">
-    <source src="Connect4\ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg">
-</audio>
-<audio id="enemyGunSound">
-    <source src="Magnum 44 sound.mp4" type="audio/mp4">
-</audio>
-
-<audio id="itemPickupSound">
-    <source src="Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="sndRevolver">
-    <source src="Connect4\RevolverSound.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="sndShotgun">
-    <source src="Connect4/ShotGunShellsOST.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="sndTommy">
-    <source src="Connect4/TommyGunOST.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="sndTurret">
-    <source src="Connect4/TurretGunOST.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="carEscapeSound">
-    <source src="Connect4/Starting Car and Driving Off  Sound Effect for editing.mp3" type="audio/mpeg">
-</audio>
-
-<audio id="menuMusic" loop>
-    <source src="Connect4_4/Love Theme From The Godfather.mp3" type="audio/mpeg">
-</audio>
-
-
+<div id="pauseScreen" class="screen">
+    <h1>PAUSED</h1>
+    <div class="menu-buttons">
+        <button id="resumeBtn">Resume</button>
+        <button id="restartBtn">Restart Level</button>
+        <button id="quitBtn">Flee to Menu</button>
+    </div>
+</div>
 
 <script>
+// ================= ASSETS & AUDIO =================
+// Note: Use your existing file paths here. Variable names generalized for the theme.
+const imgHealth = new Image(); imgHealth.src = "Connect4/Screenshot 2025-12-14 235346.png"; 
+const imgAmmo = new Image(); imgAmmo.src = "Connect4/Screenshot 2025-12-14 235612.png";
+const imgEnemy = new Image(); imgEnemy.src = "Connect4/Robot Guard.jpeg"; 
+const imgBoss = new Image(); imgBoss.src = "Connect4/Robot Boss.jpeg";
+const imgShip = new Image(); imgShip.src = "Connect4_4/spaceship.jpg"; // The escape door/vehicle
+const imgKey = new Image(); imgKey.src = "Connect4/car keys.jpg";
 
-// Get How To elements
-const howToPage = document.getElementById("howToPage");
-const howToBtn = document.getElementById("howToBtn");
-const backBtn = document.getElementById("backBtn");
+// Audio
+const menuMusic = new Audio("Connect4_2/ytmp3free.cc_ratchet-clank-3-up-your-arsenal-mylon-command-center-youtubemp3free.org.mp3"); 
+menuMusic.loop = true; menuMusic.volume = 0.5;
 
-// Show How To page
-howToBtn.addEventListener("click", () => {
-    startMenu.style.display = "none"; // hide start menu
-    howToPage.style.display = "flex"; // show How To page
-});
+const playerGunSound = new Audio("Connect4/Desertgun.mp3"); playerGunSound.volume = 0.6;
+const enemyGunSound = new Audio("Connect4/RifleSound.mp3"); enemyGunSound.volume = 0.25;
+const ammoPickupSound = new Audio("Connect4/ytmp3free.cc_picking-up-an-object-sound-effect-block-city-wars-youtubemp3free.org.mp3"); ammoPickupSound.volume = 0.55;
+const healthPickupSound = new Audio("Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3"); healthPickupSound.volume = 0.6;
+const enemyHitSound = new Audio("Connect4/MetalHit.mp3"); enemyHitSound.volume = 0.5;
+const enemyDeathSound = new Audio("Connect4/RobotDeath.mp3"); enemyDeathSound.volume = 0.90;
+const enemyExplosionSound = new Audio("Connect4/RobotExplosion.mp3"); enemyExplosionSound.volume = 0.65;
+const miniBossGunSound = new Audio("Connect4/TurrentGun.mp3"); miniBossGunSound.loop = true; miniBossGunSound.volume = 0.85;
+const keyPickupSound = new Audio("Connect4/Car Keys.mp3"); keyPickupSound.volume = 0.75;
+const escapeSound = new Audio("Connect4/Spaceship engine start up I Sound Effect (HQ) (3).mp3"); escapeSound.volume = 0.7;
 
-// Back to Start Menu
-backBtn.addEventListener("click", () => {
-    howToPage.style.display = "none"; // hide How To page
-    startMenu.style.display = "flex"; // show start menu
-});
+// ================= GAME LOGIC / UI CONTROL =================
+let gameStarted = false, paused = false, hasEscaped = false; 
+const FORCE_VISIBLE_DIST = 0.8; 
 
-const menuMusic = document.getElementById("menuMusic");
-
-// Play menu music safely after user interaction
-function playMenuMusic() {
-    menuMusic.currentTime = 0;
-    menuMusic.play().catch(() => {});
-}
-
-// Stop menu music when game starts
-function stopMenuMusic() {
-    menuMusic.pause();
-    menuMusic.currentTime = 0;
-}
-
-// Unlock audio on first user click
-document.addEventListener("click", function unlockMenuMusic() {
-    if (!menuActive) return;   // 🚫 don't play if game started
-
-    playMenuMusic();
-    document.removeEventListener("click", unlockMenuMusic);
-});
-
-
-
-
-// -------------------- Canvas Setup --------------------
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-function resize() { 
-    canvas.width = innerWidth; 
-    canvas.height = innerHeight; 
-}
-resize();
-addEventListener("resize", resize);
-
-// -------------------- UI Elements --------------------
-const startMenu = document.getElementById("startMenu");
-const startBtn = document.getElementById("startBtn");
+const initScreen = document.getElementById("initScreen");
+const splashScreen = document.getElementById("splashScreen");
+const titleScreen = document.getElementById("titleScreen");
+const howToScreen = document.getElementById("howToScreen");
+const pauseScreen = document.getElementById("pauseScreen");
 const hud = document.getElementById("hud");
+const crosshair = document.getElementById("crosshair");
 const msg = document.getElementById("msg");
-const bgMusic = document.getElementById("bgMusic");
-const shootSound = document.getElementById("shootSound");
-const enemyGunSound = document.getElementById("enemyGunSound");
+const objectivesDiv = document.getElementById("objectives");
 
-const sndRevolver = document.getElementById("sndRevolver");
-const sndShotgun  = document.getElementById("sndShotgun");
-const sndTommy    = document.getElementById("sndTommy");
-const sndTurret   = document.getElementById("sndTurret");
-
-const carEscapeSound = document.getElementById("carEscapeSound");
-
-
-const STATUS_BAR_HEIGHT = 110;
-const viewHeight = canvas.height - STATUS_BAR_HEIGHT;
-
-const STRAFE_FACTOR = 0.45; // 0.5–0.7 feels good
-
-// ===== Voice / FX Sounds =====
-const sndTommyTalk   = new Audio("Connect4/TommyTalk.mp3");
-const sndTurretLaugh = new Audio("Connect4/TurrentLaugh.mp3");
-const sndTurretDeath = new Audio("Connect4/TurretDeath.mp3");
-
-const sndDirectHit   = new Audio("Connect4/DirectHit.mp3");
-const sndRevolverTalk= new Audio("Connect4/RevolverTalk.mp3");
-const sndRobotDeath  = new Audio("Connect4/RobotDeath.mp3");
-
-// Volumes (adjust freely)
-sndTommyTalk.volume    = 1.0;
-sndTurretLaugh.volume  = 0.8;
-sndTurretDeath.volume  = 0.9;
-
-sndDirectHit.volume    = 0.6;
-sndRevolverTalk.volume = 1.0;
-sndRobotDeath.volume   = 0.9;
-
-const enemySoundState = {
-    shotgun: 0,
-    tommy: 0,
-    turret: 0
-};
-
-// 🔊 Volume controls (easy to tweak)
-sndRevolver.volume = 1.00; // adjust if needed
-sndShotgun.volume  = 0.65;
-sndTommy.volume    = 0.75;
-sndTurret.volume   = 0.95;
-
-// -------------------- Game State --------------------
-let gameStarted = false;
-let gameOver = false;
-let gameWin = false;
-let endTimer = 0;
-
-let keys = {};
-let shooting = false;
-let mouseDelta = 0;
-let fireCooldown = 0;
-
-let tempMsg = "";
-let tempMsgTimer = 0;
-
-let menuActive = true;
-let paused = false;
-
-
-
-
-// -------------------- Start Game --------------------
-startBtn.addEventListener("click", () => {
-    menuActive = false;
-    startMenu.style.display = "none";
-    msg.style.display = "none";
-    gameStarted = true;
+// Boot Sequence (Fixes Chrome Autoplay Policy)
+initScreen.onclick = () => {
+    initScreen.style.display = "none";
+    splashScreen.style.display = "flex";
+    menuMusic.play().catch(()=>{}); // Play menu music immediately
     
-    // Stop menu music
-    stopMenuMusic();
-    // 🔓 Unlock all sounds
-    bgMusic.currentTime = 0;
-    bgMusic.play().catch(()=>{});
+    setTimeout(() => {
+        splashScreen.style.opacity = "0";
+        setTimeout(() => {
+            splashScreen.style.display = "none";
+            titleScreen.style.display = "flex";
+        }, 1500);
+    }, 4500);
+};
 
-    itemPickupSound.play().then(() => {
-        itemPickupSound.pause();
-        itemPickupSound.currentTime = 0;
-    }).catch(()=>{});
+// Menu Routing
+document.getElementById("startBtn").onclick = startGame;
+document.getElementById("howToBtn").onclick = () => { titleScreen.style.display = "none"; howToScreen.style.display = "flex"; };
+document.getElementById("backBtn").onclick = () => { howToScreen.style.display = "none"; titleScreen.style.display = "flex"; };
 
-    [
-    	sndRevolver,
-    	sndShotgun,
-    	sndTommy,
-    	sndTurret
-    ].forEach(snd => {
-    	snd.play().then(() => {
-        	snd.pause();
-        	snd.currentTime = 0;
-    }).catch(()=>{});
-});
+document.getElementById("resumeBtn").onclick = togglePause;
 
+document.getElementById("restartBtn").onclick = () => { 
+    resetGame("full"); 
+    paused = false; pauseScreen.style.display = "none";
+    canvas.requestPointerLock();
+};
 
-    initGame();
-    initItemsAndCar();
-});
+document.getElementById("quitBtn").onclick = () => { 
+    paused = false; pauseScreen.style.display = "none";
+    document.exitPointerLock(); 
+    gameStarted = false; hideHUD(); 
+    
+    miniBossGunSound.pause(); escapeSound.pause();
+    menuMusic.play().catch(()=>{}); // Resume menu music
+    
+    titleScreen.style.display = "flex"; 
+    resetGame("full");
+};
 
-<!-- ---Images --- -->
-// Load health pack image
-const healthPackImg = new Image();
-healthPackImg.src = "Connect4_2/Screenshot 2025-12-17 150054.png";
+function startGame() {
+    titleScreen.style.display = "none";
+    gameStarted = true;
+    resetGame("full"); 
+    showHUD();
+    
+    menuMusic.pause(); // Stop menu music during gameplay
+    
+    showMessage("CLICK TO LOCK MOUSE", 3000);
+    canvas.requestPointerLock();
+}
 
-// Load health pickup sound
-const healthPickupSound = new Audio("Connect4/ytmp3free.cc_garrys-mod-health-vial-sound-effect-youtubemp3free.org.mp3");
+function showHUD() { hud.style.display = "block"; crosshair.style.display = "block"; objectivesDiv.style.display = "block"; }
+function hideHUD() { hud.style.display = "none"; crosshair.style.display = "none"; objectivesDiv.style.display = "none"; if(!hasEscaped) msg.style.display = "none"; }
 
-// ========================
-// Player Face Images
-// ========================
-const faceIdle = new Image();
-faceIdle.src = "Connect4/Chump1.jpg";
-
-const faceFire = new Image();
-faceFire.src = "Connect4/Chump2.jpg";
-
-// --- Preload car image ---
-const carImg = new Image();
-carImg.src = "Connect4_2/Car.jpg";
-
-// ========================
-// 1-UP Collectible
-// ========================
-const oneUpImg = new Image();
-oneUpImg.src = "Connect4_4/Screenshot_20250615_162031_Snapchat.jpg";
-
-// Optional sound (reuse pickup sound if you want)
-const oneUpSound = new Audio(
-    "Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3"
-);
-oneUpSound.volume = 0.8;
-
-
-
-// ========================
-// World Object Sizes
-// ========================
-const ITEM_WORLD_SIZE = 88;   // base on-screen size (pixels)
-const ITEM_MIN_SIZE   = 42;   // far distance
-const ITEM_MAX_SIZE   = 130;   // close distance
-
-const FORCE_VISIBLE_DIST = 0.9; // tweak: 0.7–1.2
-
-let deathFade = 0;      // 0 = fully visible, 1 = fully black
-let isDead = false;
-let fadeDirection = 0;  // 0 = none, 1 = fading out, -1 = fading in
-const FADE_SPEED = 0.02; // adjust for faster/slower fade
-
-
-// -------------------- Pointer Lock --------------------
-canvas.addEventListener("click", () => canvas.requestPointerLock());
-document.addEventListener("pointerlockchange", () => {
-    msg.style.display = (document.pointerLockElement !== canvas && gameStarted && !gameOver && !gameWin) ? "block" : "none";
-});
-
-// -------------------- Keyboard Input & Shooting --------------------
-addEventListener("keydown", e => {
-    keys[e.key] = true;
-    if(e.code === "Space" && !shooting) {
-        shooting = true;
-        shootSound.currentTime = 0;
-        shootSound.loop = true;
-        shootSound.play().catch(() => {});
+function togglePause() {
+    if(!gameStarted || hasEscaped) return; 
+    paused = !paused;
+    if(paused) {
+        document.exitPointerLock();
+        pauseScreen.style.display = "flex";
+        miniBossGunSound.pause(); escapeSound.pause();
+    } else {
+        pauseScreen.style.display = "none";
+        canvas.requestPointerLock();
+        if (boss.isFiring && boss.alive) miniBossGunSound.play().catch(()=>{});
     }
-});
+}
 
-addEventListener("keyup", e => {
-    keys[e.key] = false;
-    if(e.code === "Space") {
-        shooting = false;
-        shootSound.pause();
-        shootSound.currentTime = 0;
-    }
-});
-
-// -------------------- Mouse Movement --------------------
-document.addEventListener("mousemove", e => {
-    if(document.pointerLockElement === canvas) mouseDelta = e.movementX;
-});
-
-// -------------------- Maze Map --------------------
+// ================= MAP & ENTITIES =================
 const map = [
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,1,0,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,1,1,0,1,1],
-[1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,1,1,1,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,1,1,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,1,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,1,0,1,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,1],
-[1,0,1,1,1,1,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1],
-[1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
-[1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,1,1,1,0,1,1,1,0,1,1,1,1,1,1,0,1,1,0,1,1,1,1,1,0,1,1],
-[1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
-[1,0,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+[1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+[1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,0,1,1,1,1,1,1,1],
+[1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
+[1,0,1,1,1,1,1,0,1,0,1,0,1,0,0,1,0,1,0,1,0,0,0,1],
+[1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,1,0,0,0,1],
+[1,0,1,1,1,0,0,0,1,1,0,0,0,1,0,0,0,1,0,1,0,0,0,1],
+[1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1],
+[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1],
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ];
+const MAP_W = map[0].length, MAP_H = map.length;
 
-const MAP_W = map[0].length;
-const MAP_H = map.length;
-
-// -------------------- Player --------------------
-let player = {
-    x: 3.5, 
-    y: 3.5, 
-    angle: 0, 
-    speed: 0.070, 
-    health: 1000,
-    lives: 3
-};
-
-// ================= HEALTH PACKS =================
-let healthPacks = [
-    {x: 14.5, y: 3.5, collected: false},
-    {x: 2.5, y: 6.5, collected: false},
-    {x: 16.5, y: 6.5, collected: false},
-    {x: 24.5, y: 9.5, collected: false},
-    {x: 16.5, y: 10.5, collected: false},
-    {x: 23.5, y: 17.5, collected: false},
-    {x: 2.5, y: 10.5, collected: false}
-];
-
-let oneUps = [
-    { x: 26.5,  y: 5.5,  collected: false },
-    { x: 9.5, y: 18.5, collected: false }
-];
-
-
-// ========================
-// Object Images
-// ========================
-const objectImages = [
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image(),
-    new Image()
-];
-
-objectImages[0].src = "Connect4_2/Object1 (5).jpg";
-objectImages[1].src = "Connect4/Object1 (6).jpg";
-objectImages[2].src = "Connect4_2/Object1 (1).jpg";
-objectImages[3].src = "Connect4_2/Object1 (2).jpg";
-objectImages[4].src = "Connect4_4/Object1 (3).jpg";
-objectImages[5].src = "Connect4_4/Object1 (4).jpg";
-
-
-
-// ========================
-// Enemy Types
-// ========================
-const ENEMY_TYPES = {
-    revolver: {
-        sprite: "Connect4/copilot_image_1766009412260.jpeg",
-        health: 100,
-        moveSpeed: 0.03,
-        idleSpeed: 0.015,
-        shootCooldown: 60,
-        bulletSpeed: 0.15,
-        burst: 1,
-        canMoveWhileShooting: true,
-        isTurret: false,
-	meleeDamage: 0.3,
-        bulletDamage: 12,
-	minAttackDist: 2.2
-    },
-
-    turret: {
-        sprite: "Connect4_4/copilot_image_1766009643966.jpeg",
-        health: 220,
-        moveSpeed: 0,
-        idleSpeed: 0,
-        shootCooldown: 10,
-        bulletSpeed: 0.18,
-        burst: 1,
-        canMoveWhileShooting: false,
-        isTurret: true,
-	meleeDamage: 0,
-        bulletDamage: 15
-    },
-
-    tommy: {
-        sprite: "Connect4_2/copilot_image_1766008655046.jpeg",
-        health: 140,
-        moveSpeed: 0.02,
-        idleSpeed: 0.01,
-        shootCooldown: 6,
-        bulletSpeed: 0.17,
-        burst: 3,
-        canMoveWhileShooting: false,
-        isTurret: false,
-	meleeDamage: 0.4,
-        bulletDamage: 8,
-	minAttackDist: 2.6
-    },
-
-    shotgun: {
-        sprite: "Connect4_2/copilot_image_1766009225786.jpeg",
-        health: 160,
-        moveSpeed: 0.03,
-        idleSpeed: 0.015,
-        shootCooldown: 120,
-        bulletSpeed: 0.14,
-        burst: 5,
-        canMoveWhileShooting: true,
-        isTurret: false,
-        meleeDamage: 0.35,
-        bulletDamage: 10,
-	minAttack: 2.5
-    }
-};
-
-
-// -------------------- Enemies --------------------
-let enemies = [];
+// Tommy Gun stats: 50 round drum, starts with 50 + 50 reserve
+let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:50, maxAmmo:200 }; 
+let magSize = 50, currentMag = 50, isReloading = false, reloadTimer = 0;
 
 let enemiesTemplate = [
-    {x:11.5, y:1.5, type:"revolver"},
-    {x:23.5, y:1.5, type:"revolver"},
-    {x:20.5, y:11.5, type:"revolver"},
-    {x:21.5, y:13.5, type:"revolver"},
-    {x:21.5, y:17.5, type:"revolver"},
-    {x:2.5, y:9.5, type:"revolver"},
-
-    {x:5.5, y:7.5, type:"shotgun"},
-    {x:5.5, y:10.5, type:"shotgun"},
-    {x:4.5, y:17.5, type:"shotgun"},
-
-    {x:16.5, y:1.5, type:"tommy"},
-    {x:14.5, y:7.5, type:"tommy"},
-    {x:14.5, y:10.5, type:"tommy"},
-    {x:14.5, y:18.5, type:"tommy"},
-
-    {x:26.5, y:3.5, type:"turret"},
-    {x:24.5, y:10.5, type:"turret"},
-    {x:8.5, y:18.5, type:"turret"},
-    {x:10.5, y:18.5, type:"turret"}
+    {x:9.5, y:1.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:4.5, y:7.5, alive:true, health:100, shootCooldown:0, dir:0},
+    {x:10.5, y:5.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:14.5, y:2.5, alive:true, health:100, shootCooldown:0, dir:0}, 
+    {x:12.5, y:7.5, alive:true, health:100, shootCooldown:0, dir:0}, {x:3.5, y:8.5, alive:true, health:100, shootCooldown:0, dir:0}  
 ];
+let enemies = [];
+const healthPickupsTemplate = [ {x:2.5, y:1.5}, {x:11.5, y:2.5}, {x:6.5, y:6.5}, {x:15.5, y:1.5}, {x:13.5, y:5.5}, {x:5.5, y:8.5} ];
+let healthPickups = [];
 
-enemies = enemiesTemplate.map(e => ({
-    ...e,
-    alive: true,
-    health: ENEMY_TYPES[e.type].health,
-    shootCooldown: 0,
-    shootingSound: false,
-    state: "idle",
-    dir: Math.random()*Math.PI*2,
-    stateTimer: 0
-}));
+const boss = { x: 21.5, y: 8.5, homeX: 21.5, homeY: 8.5, alive: true, health: 300, maxHealth: 300, dir: 1, speed: 0.02, patrolMinX: 20.5, patrolMaxX: 22.0, shootCooldown: 0, dirAngle: 0, fireRate: 0, isFiring: false };
+const spaceship = { x: 22, y: 1, unlocked: false };
+const bossKey = { x: null, y: null, collected: false, dropped: false };
+let ammoPickups = [];
 
-// -------------------- Enemy Sprite --------------------
-const enemySprites = {};
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); window.addEventListener("resize", resize);
 
-Object.keys(ENEMY_TYPES).forEach(type => {
-    const img = new Image();
-    img.src = ENEMY_TYPES[type].sprite;
-    enemySprites[type] = img;
+// ================= INPUT & CONTROLS =================
+let keys = {}, mouseDX = 0, fireCooldown = 0;
+let bullets = [], enemyBullets = [];
+
+document.addEventListener("keydown", e => {
+    keys[e.key.toLowerCase()] = true;
+    if (e.key.toLowerCase() === "p" && !hasEscaped) togglePause();
+    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused && !hasEscaped) triggerReload();
+    if ((e.code === "Space" || e.key === " ") && canShoot()) shoot();
 });
 
-// -------------------- Bullets --------------------
-let bullets = [];
-let enemyBullets = [];
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
+document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas && !hasEscaped) mouseDX=e.movementX; });
 
-// -------------------- Items & Car --------------------
-let items = [];
-let car = null;
+// Smart Mouse Firing
+document.addEventListener("mousedown", e => {
+    if(!gameStarted || paused || hasEscaped) return;
+    if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); } 
+    else if (e.button === 0 && canShoot()) shoot();
+});
 
+function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted && !hasEscaped; }
+
+function shoot(){
+    bullets.push({ x: player.x + Math.cos(player.angle) * 0.3, y: player.y + Math.sin(player.angle) * 0.3, a: player.angle, life: 80 });
+    playerGunSound.currentTime = 0; playerGunSound.play();
+    fireCooldown = 8; // Faster firing for Tommy Gun
+    currentMag--;
     
-
-function initItemsAndCar() {
-    items = [
-        { x:26.5, y:1.5, collected:false, img: objectImages[0] },
-    	{ x:12.5, y:3.5, collected:false, img: objectImages[2] },
-    	{ x:19.5, y:5.5, collected:false, img: objectImages[1] },
-    	{ x:11.5, y:13.5, collected:false, img: objectImages[3] },
-    	{ x:26.5, y:17.5, collected:false, img: objectImages[4] },
-    	{ x:1.5, y:18.5, collected:false, img: objectImages[5] }
-    ];	
-    car = {x:1.5, y:1.5};
+    if(currentMag === 0 && player.ammo > 0) triggerReload();
 }
 
-let collectedMessageShown = false;
+function triggerReload() { isReloading = true; reloadTimer = 60; } // Longer reload for drum
+function isWall(x, y){ let tx = Math.floor(x), ty = Math.floor(y); return map[ty] && map[ty][tx] !== 0; }
 
-function collectItems() {
-    items.forEach(item => {
-        if(item.collected) return;
+function move(){
+    if (hasEscaped) return; 
+    player.angle += mouseDX * 0.002; mouseDX = 0;
+    
+    if(keys["arrowleft"]) player.angle -= 0.04;
+    if(keys["arrowright"]) player.angle += 0.04;
 
-        const dist = Math.hypot(player.x - item.x, player.y - item.y);
-        if(dist < 0.5){
-            item.collected = true;
+    let c = Math.cos(player.angle), s = Math.sin(player.angle);
+    let dx = 0, dy = 0;
 
-            itemPickupSound.currentTime = 0;
-            itemPickupSound.play();
+    if(keys["w"] || keys["arrowup"]){ dx += c * player.speed; dy += s * player.speed; }
+    if(keys["s"] || keys["arrowdown"]){ dx -= c * player.speed; dy -= s * player.speed; }
+    if(keys["a"]){ dx += s * player.speed; dy -= c * player.speed; } 
+    if(keys["d"]){ dx -= s * player.speed; dy += c * player.speed; } 
 
-            showTempMessage("Item Collected!", 60);
-        }
-    });
-
-    // Show "all collected" message only once
-    if(items.every(i => i.collected) && !collectedMessageShown){
-        showTempMessage("All items collected! Head to the car!", 120);
-        collectedMessageShown = true;
-    }
+    let nx = player.x + dx, ny = player.y + dy;
+    if(!isWall(nx, player.y)) player.x = nx;
+    if(!isWall(player.x, ny)) player.y = ny;
 }
 
-
-
-function showTempMessage(msg, duration=120){
-    tempMsg = msg;
-    tempMsgTimer = duration;
-}
-
-let carWarningShown = false;
-
-function checkCarEscape() {
-    const distToCar = Math.hypot(player.x - car.x, player.y - car.y);
-    if(items.every(it => it.collected) && distToCar < 1) {
-        if(!gameWin){
-            gameWin = true;
-            endTimer = 900;
-	    
-            carEscapeSound.currentTime = 0;
-	    carEscapeSound.play().catch(() => {});
-        }
-    } else if(distToCar < 1 && !items.every(it => it.collected)) {
-        if(!carWarningShown) {
-            showTempMessage("Collect all items before escaping!", 120);
-            carWarningShown = true;
-        }
-    } else {
-        carWarningShown = false;
-    }
-}
-
-// --- Draw items & car on mini-map ---
-function drawItemsAndCar() {
-    const scale = 15;
-    const offsetX = canvas.width - MAP_W * scale - 20;
-    const offsetY = canvas.height - MAP_H * scale - 20;
-
-    items.forEach(item => {
-        if(!item.collected){
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(offsetX + item.x * scale - 3, offsetY + item.y * scale - 3, 6, 6);
-        }
-    });
-
-    if(car){
-        if(carImg.complete){
-            ctx.drawImage(carImg, offsetX + car.x * scale - 5, offsetY + car.y * scale - 5, 10, 10);
-        } else {
-            ctx.fillStyle = "cyan";
-            ctx.fillRect(offsetX + car.x * scale - 3, offsetY + car.y * scale - 3, 6, 6);
-        }
-    }
-}
-
-
-// --- Draw items & car in 3D world ---
-function drawItemsAndCar3D(zBuffer){
-    const w = canvas.width;
-    const h = canvas.height;
-
-    // --- Draw collectibles (unchanged) ---
-    items.forEach(item => {
-        if(item.collected) return;
-
-        const dx = item.x - player.x;
-        const dy = item.y - player.y;
-        const dist = Math.hypot(dx, dy);
-
-        if(dist > 60) return;
-        if(!canSee(player.x, player.y, item.x, item.y)) return;
-
-        let ang = Math.atan2(dy, dx) - player.angle;
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-
-        if(Math.abs(ang) < Math.PI / 2){
-            let size = ITEM_WORLD_SIZE * (6 / dist);
-            size = Math.min(ITEM_MAX_SIZE, size);
-            size = Math.max(ITEM_MIN_SIZE, size);
-
-            const screenX = w / 2 + Math.tan(ang) * w / 2;
-
-            ctx.save();
-            ctx.shadowBlur = 18;
-            ctx.shadowColor = "rgba(255, 255, 200, 0.85)";
-
-            ctx.drawImage(
-                item.img,
-                screenX - size / 2,
-                h / 2 - size / 2,
-                size,
-                size
-            );
-
-            ctx.restore();
-        }
-    });
-
-    // --- Draw car (spaceship-style) ---
-    if(car && carImg.complete){
-        let dx = (car.x + 0.5) - player.x;
-        let dy = (car.y + 0.5) - player.y;
-        let dist = Math.hypot(dx, dy);
-        let ang = Math.atan2(dy, dx) - player.angle;
-
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-
-        const FORCE_VISIBLE_DIST = 0.4;
-        const forceVisible = dist < FORCE_VISIBLE_DIST + 0.4;
-
-        if(!forceVisible && Math.abs(ang) > Math.PI/2 + 0.02) return;
-
-        const sx = w/2 + Math.tan(ang) * w/2;
-        if(!forceVisible && (sx < 0 || sx >= w)) return;
-
-        const idx = Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1));
-        if(!forceVisible && zBuffer[idx] < dist) return;
-
-        const sz = Math.max(h / Math.max(dist, 0.3) * 1.2, 100); // bigger car
-        if(typeof isFullyVisible === "function" && !isFullyVisible(dist, sx, sz, zBuffer)) return;
-
-        ctx.save();
-        ctx.shadowBlur = 28;
-        ctx.shadowColor = "#00ffff"; // cyan glow
-        ctx.drawImage(
-            carImg,
-            sx - sz/2,
-            h/2 - sz/2,
-            sz,
-            sz
-        );
-        ctx.restore();
-    }
-}
-
-
-// ------------------Player------------------------
-
-function createPlayer() {
-    return {
-        x: 3.5,
-        y: 3.5,
-        angle: 0,
-        speed: 0.070,
-        health: 1000,
-        lives: 3
-    };
-}
-
-
-// ========================
-// Wall Textures (Solid Colors)
-// ========================
-function makeTexture(color){
-    let cnv = document.createElement("canvas"); 
-    cnv.width = cnv.height = 32;
-    let cctx = cnv.getContext("2d");
-
-    cctx.fillStyle = color;
-    cctx.fillRect(0, 0, 32, 32);
-
-    return ctx.createPattern(cnv, "repeat");
-}
-
-const wallTextures = [
-    makeTexture("#2f3440"), // soft dark blue-gray
-    makeTexture("#5a5238"), // muted brown
-    makeTexture("#4a2a2a")  // soft dark red
-];
-
-
-// ------Pausing----------
-
-function pauseGame() {
-    if (paused) return;
-    paused = true;
-
-    // Stop all sounds
-    stopAllSounds();
-
-    // DO NOT exit pointer lock
-    // (keeps screen locked)
-
-    msg.innerText = "PAUSED";
-    msg.style.display = "block";
-}
-
-function resumeGame() {
-    if (!paused) return;
-    paused = false;
-
-    // Resume ONLY game music
-    bgMusic.play().catch(()=>{});
-
-    // Pointer lock remains active
-
-    msg.innerText = "";
-}
-
-addEventListener("keydown", e => {
-
-    if (e.key === "p" || e.key === "P") {
-        if (!gameStarted || gameOver || gameWin) return;
-        paused ? resumeGame() : pauseGame();
-        return;
-    }
-
-    if (paused) return;
-
-    keys[e.key] = true;
-
-    if (e.code === "Space" && !shooting) {
-        shooting = true;
-        shootSound.currentTime = 0;
-        shootSound.loop = true;
-        shootSound.play().catch(()=>{});
-    }
-});
-
-
-// ========================
-// Raycasting
-// ========================
-let zBuffer = new Array(canvas.width);
-
-function castRays(){
-    const w = canvas.width, h = canvas.height;
-    ctx.fillStyle = "#222244"; ctx.fillRect(0, 0, w, h/2);
-    ctx.fillStyle = "#111"; ctx.fillRect(0, h/2, w, h/2);
-
-    const fov = Math.PI/3, step = fov / w;
-
-    for(let i = 0; i < w; i++){
-        const angle = player.angle - fov/2 + step*i;
-        let dist = 0, hit = false, cellValue = 1;
-
-        while(!hit && dist < 20){
-            dist += 0.02;
-            const rx = player.x + Math.cos(angle) * dist;
-            const ry = player.y + Math.sin(angle) * dist;
-            const mx = Math.floor(rx), my = Math.floor(ry);
-
-            if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H){
-                hit = true; cellValue = 1; break;
-            }
-
-            cellValue = map[my][mx];
-            if(cellValue !== 0) hit = true;
-        }
-
-        zBuffer[i] = dist; // store distance for this column
-
-        let wallH = Math.min(h, 600 / dist);
-        if(!isFinite(wallH)) wallH = h;
-
-        const texture = wallTextures[cellValue % wallTextures.length];
-        ctx.fillStyle = texture;
-        ctx.fillRect(i, (h - wallH)/2, 1, wallH);
-        ctx.fillStyle = `rgba(0,0,0,${dist/12})`;
-        ctx.fillRect(i, (h - wallH)/2, 1, wallH);
-    }
-}
-
-// ========================
-// Line-of-Sight
-// ========================
-function canSee(px, py, ex, ey){
-    const dx = ex - px;
-    const dy = ey - py;
-    const dist = Math.hypot(dx, dy);
-    const steps = dist / 0.05; // check every 0.05 units
-    for(let i = 0; i <= steps; i++){
-        const t = i / steps;
-        const x = px + dx * t;
-        const y = py + dy * t;
-        const mx = Math.floor(x);
-        const my = Math.floor(y);
-        if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H) return false;
-        if(map[my][mx] === 1) return false;
-    }
-    return true;
-}
-
-
-function canSeeSoft(px, py, ex, ey, radius = 0.45){
-    // Check center and four points around enemy
-    const points = [
-        [ex, ey],
-        [ex + radius, ey],
-        [ex - radius, ey],
-        [ex, ey + radius],
-        [ex, ey - radius]
-    ];
-
-    for(let [tx, ty] of points){
-        if(canSee(px, py, tx, ty)){
-            return true; // if any point is visible, enemy is visible
-        }
-    }
-    return false;
-}
-
-// ========================
-// Enemy Functions
-// ========================
-function eAngle(e){
-    return Math.atan2(player.y - e.y, player.x - e.x);
-}
-
-function enemyShoot(e){
-    const cfg = ENEMY_TYPES[e.type];
-
-    e.didShootThisFrame = true; 
-
-    for(let i = 0; i < cfg.burst; i++){
-        let spread = 0;
-        if(e.type === "shotgun"){
-            spread = (Math.random() - 0.5) * 0.4;
-        }
-
-        const dx = player.x - e.x;
-        const dy = player.y - e.y;
-        const baseAngle = Math.atan2(dy, dx) + spread;
-
-        enemyBullets.push({
-            x: e.x,
-            y: e.y,
-            vx: Math.cos(baseAngle) * cfg.bulletSpeed,
-            vy: Math.sin(baseAngle) * cfg.bulletSpeed,
-            life: 80
-        });
-    }
-
-    // 🔊 Play revolver immediately
-    if(e.type === "revolver" && sndRevolver){
-        sndRevolver.currentTime = 0;
-        sndRevolver.play().catch(()=>{}); 
-    }
-}
-
-function drawEnemies() {
-    const w = canvas.width, h = canvas.height;
-
-    // Update all enemies (AI, movement, shooting, sound)
-    enemies.forEach(e => {
-        if (!e.alive) {
-            stopEnemySound(e);
-            return;
-        }
-
-        e.didShootThisFrame = false;
-        const cfg = ENEMY_TYPES[e.type];
-        let dx = e.x - player.x;
-        let dy = e.y - player.y;
-        let dist = Math.hypot(dx, dy);
-        let moveDist = Math.max(dist, 0.001);
-
-        // Melee
-        if (!cfg.isTurret && dist < 0.8 && e.meleeCooldown <= 0) {
-            player.health -= cfg.meleeDamage;
-            player.health = Math.max(0, player.health);
-            e.meleeCooldown = 20;
-        }
-        if (e.meleeCooldown > 0) e.meleeCooldown--;
-
-        // Hard separation
-        const minSeparation = 0.6;
-        if (dist < minSeparation) {
-            const push = (minSeparation - dist) * 0.5;
-            const nx = e.x + (dx / moveDist) * push;
-            const ny = e.y + (dy / moveDist) * push;
-            if (mxValid(nx, ny) && map[Math.floor(ny)][Math.floor(nx)] === 0) {
-                e.x = nx; e.y = ny;
-            }
-        }
-
-        // AI state
-        if (canSee(e.x, e.y, player.x, player.y)) {
-            e.state = "chase";
-            e.stateTimer = 120;
-        } else if (e.stateTimer > 0) {
-            e.stateTimer--;
-        } else {
-            e.state = "idle";
-        }
-
-        // Idle move
-        if (e.state === "idle" && !cfg.isTurret) {
-            const step = cfg.idleSpeed;
-            if (Math.random() < 0.01) e.dir = Math.random() * Math.PI * 2;
-            const nx = e.x + Math.cos(e.dir) * step;
-            const ny = e.y + Math.sin(e.dir) * step;
-            if (mxValid(nx, ny) && map[Math.floor(ny)][Math.floor(nx)] === 0) {
-                e.x = nx; e.y = ny;
-            } else e.dir += Math.PI / 2;
-        }
-
-        // Chase move
-        if (e.state === "chase" && !cfg.isTurret) {
-            const stopDist = cfg.minAttackDist || 1.2;
-            if (dist > stopDist && (cfg.canMoveWhileShooting || e.shootCooldown <= 0)) {
-                const step = cfg.moveSpeed;
-                const nx = e.x - (dx / moveDist) * step;
-                const ny = e.y - (dy / moveDist) * step;
-                if (mxValid(nx, ny) && map[Math.floor(ny)][Math.floor(nx)] === 0) {
-                    e.x = nx; e.y = ny;
+// ================= UPDATES =================
+function updateBullets(){
+    bullets.forEach(b => {
+        let nextX = b.x + Math.cos(b.a) * 0.35; let nextY = b.y + Math.sin(b.a) * 0.35;
+        if(isWall(nextX, nextY)) b.life = 0;
+        else { b.x = nextX; b.y = nextY; b.life--; }
+        if(b.life <= 0) return;
+
+        enemies.forEach(e => {
+            if(!e.alive || b.life <= 0) return;
+            if(Math.hypot(e.x - b.x, e.y - b.y) < 0.3){
+                b.life = 0; enemyHitSound.currentTime = 0; enemyHitSound.play(); e.health -= 35;
+                if(e.health <= 0 && !e.droppedAmmo){
+                    e.alive = false; e.droppedAmmo = true;
+                    enemyDeathSound.currentTime = 0; enemyDeathSound.play(); 
+                    ammoPickups.push({ x: e.x, y: e.y, taken:false });
                 }
             }
-        }
+        });
 
-        // Shooting
-        if (canSee(e.x, e.y, player.x, player.y) && e.shootCooldown <= 0) {
-            enemyShoot(e);
-            e.shootCooldown = cfg.shootCooldown;
-        }
-        if (e.shootCooldown > 0) e.shootCooldown--;
-
-        // Sound control
-        const seesPlayer = canSee(e.x, e.y, player.x, player.y);
-        if (e.alive) {
-            if (seesPlayer) {
-                if (e.type !== "revolver") playEnemySound(e);
-                e.soundTimer = 100;
-            } else if (e.soundTimer > 0) e.soundTimer--;
-            else stopEnemySound(e);
-        } else stopEnemySound(e);
-
-        // First sight voice
-        if (seesPlayer && !e.wasSeeingPlayer) {
-            switch (e.type) {
-                case "tommy": sndTommyTalk.currentTime = 0; sndTommyTalk.play().catch(() => {}); break;
-                case "turret": sndTurretLaugh.currentTime = 0; sndTurretLaugh.play().catch(() => {}); break;
-                case "revolver": sndRevolverTalk.currentTime = 0; sndRevolverTalk.play().catch(() => {}); break;
+        if(boss.alive && b.life > 0 && Math.hypot(boss.x - b.x, boss.y - b.y) < 0.4){
+            b.life = 0; enemyHitSound.currentTime = 0; enemyHitSound.play(); boss.health -= 15;
+            if(boss.health <= 0){
+                boss.alive = false; enemyDeathSound.currentTime = 0; enemyDeathSound.play(); 
+                bossKey.x = boss.x; bossKey.y = boss.y; bossKey.dropped = true;
             }
         }
-        e.wasSeeingPlayer = seesPlayer;
-
-        e.dist = dist; // store for rendering
-    });
-
-    // Sort enemies by distance farthest first (closest drawn last)
-    const drawList = enemies
-        .filter(e => e.alive)
-        .sort((a, b) => b.dist - a.dist);
-
-    // Rendering
-    drawList.forEach(e => {
-        let dx = e.x - player.x;
-        let dy = e.y - player.y;
-        let dist = Math.max(e.dist, 0.35); // min render distance
-        let angleToEnemy = Math.atan2(dy, dx) - player.angle;
-        angleToEnemy = Math.atan2(Math.sin(angleToEnemy), Math.cos(angleToEnemy));
-
-        const halfFov = Math.PI / 3;
-        const fovBuffer = 0.12;
-        if (Math.abs(angleToEnemy) > halfFov + fovBuffer) return;
-
-        let screenX = w / 2 + Math.tan(angleToEnemy) * w / 2;
-        if (!isFinite(screenX)) return;
-
-        const column = Math.max(0, Math.min(Math.floor(screenX), zBuffer.length - 1));
-        if (dist > zBuffer[column] + 0.15) return; // wall closer
-
-        // Size calculation
-        let size = (h / Math.max(dist, 0.1)) * 0.9;
-        const farDist = 10;
-        size *= Math.pow(Math.min(1, farDist / dist), 0.8);
-        size = Math.max(size, 24);
-
-        // Shadow
-        ctx.fillStyle = "rgba(0,0,0,0.35)";
-        ctx.beginPath();
-        ctx.ellipse(screenX, h/2 + size*0.9, size*0.4, size*0.35, 0, 0, Math.PI*2);
-        ctx.fill();
-
-        // Draw sprite
-        const img = enemySprites[e.type];
-        if (img && img.complete) ctx.drawImage(img, screenX - size/2, h/2 - size, size, size*2);
-        else {
-            ctx.fillStyle = "red";
-            ctx.fillRect(screenX - size/4, h/2 - size, size/2, size*2);
-        }
-
-        // Health bar
-        const hbW = size, hbX = screenX - hbW/2, hbY = h/2 - size - 16;
-        ctx.fillStyle = "black";
-        ctx.fillRect(hbX-1, hbY-1, hbW+2, 12);
-        ctx.fillStyle = "lime";
-        ctx.fillRect(hbX, hbY, hbW * (e.health / ENEMY_TYPES[e.type].health), 10);
-    });
-}
-
-
-function playEnemySound(e){
-    let snd;
-
-    switch(e.type){
-        case "revolver": snd = sndRevolver; break;
-        case "shotgun":  snd = sndShotgun;  break;
-        case "tommy":    snd = sndTommy;    break;
-        case "turret":   snd = sndTurret;   break;
-    }
-
-    if(!snd) return;
-
-    // Single-shot weapon
-    if(e.type === "revolver"){
-        snd.currentTime = 0;
-        snd.play().catch(()=>{});
-        return;
-    }
-
-    // Automatic / looped weapons
-    if(!e.shootingSound){
-        snd.loop = true;
-        snd.play().catch(()=>{});
-        e.shootingSound = true;
-    }
-}
-
-function stopEnemySound(e){
-    let snd;
-
-    switch(e.type){
-        case "shotgun": snd = sndShotgun; break;
-        case "tommy":   snd = sndTommy;   break;
-        case "turret":  snd = sndTurret;  break;
-        default: return;
-    }
-
-    if(e.shootingSound){
-        snd.pause();
-        snd.currentTime = 0;
-        snd.loop = false;
-        e.shootingSound = false;
-    }
-}
-
-
-
-
-// ========================
-// Player Bullets
-// ========================
-function shootEnemies(){
-    if(shootSound.paused) shootSound.play().catch(()=>{});
-    const b = { 
-        x: player.x + Math.cos(player.angle) * 0.2, 
-        y: player.y + Math.sin(player.angle) * 0.2, 
-        angle: player.angle, 
-        speed: 0.28, 
-        life: 90 
-    };
-    bullets.push(b);
-}
-
-function updateBullets(){
-    bullets.forEach(b=>{
-        if(b.life <= 0) return;
-        b.x += Math.cos(b.angle) * b.speed;
-        b.y += Math.sin(b.angle) * b.speed;
-        b.life--;
-
-        const mx = Math.floor(b.x), my = Math.floor(b.y);
-        if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H || map[my][mx] === 1){
-            b.life = 0;
-            return;
-        }
-
-        enemies.forEach(e=>{
-            if(!e.alive) return;
-            const d = Math.hypot(e.x - b.x, e.y - b.y);
-            if(d < 0.45){
-    e.health -= 34;
-
-    // 🔊 HIT SOUND
-    sndDirectHit.currentTime = 0;
-    sndDirectHit.play().catch(()=>{});
-
-    b.life = 0;
-
-    if(e.health <= 0){
-        e.alive = false;
-        handleEnemyDeath(e);
-    }
-}
-        });
     });
     bullets = bullets.filter(b => b.life > 0);
-}
 
-function drawBullets(){
-    const w = canvas.width, h = canvas.height;
-
-    bullets.forEach(b=>{
-        let dx = b.x - player.x, dy = b.y - player.y;
-        let dist = Math.hypot(dx, dy);
-        if(dist < 0.4 || dist > 60) return;
-
-        let angleToBullet = Math.atan2(dy, dx) - player.angle;
-        if(angleToBullet > Math.PI) angleToBullet -= 2*Math.PI;
-        if(angleToBullet < -Math.PI) angleToBullet += 2*Math.PI;
-
-        if(Math.abs(angleToBullet) < Math.PI/2){
-            let size = (h / Math.max(dist,0.1)) * 0.04;
-            size = Math.min(12, Math.max(2, size));
-            const screenX = w/2 + Math.tan(angleToBullet) * w/2;
-            ctx.fillStyle = "yellow";
-            ctx.fillRect(screenX - 2, h/2 - size/2, 4, 4 + size*0.6);
-        }
-    });
-}
-
-function handleEnemyDeath(e){
-    // Stop weapon sounds immediately
-    stopEnemySound(e);
-
-    // Reset voice state
-    e.hasSpoken = false;
-    e.wasSeeingPlayer = false;
-
-    // Death sounds
-    if(e.type === "turret"){
-        sndTurretDeath.currentTime = 0;
-        sndTurretDeath.play().catch(()=>{});
-    } else {
-        sndRobotDeath.currentTime = 0;
-        sndRobotDeath.play().catch(()=>{});
-    }
-}
-
-// ========================
-// Enemy Bullets
-// ========================
-function updateEnemyBullets(){
-    enemyBullets.forEach(b=>{
-        if(b.life <= 0) return;
-        b.x += b.vx; b.y += b.vy; b.life--;
-
-        const mx = Math.floor(b.x), my = Math.floor(b.y);
-        if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H || map[my][mx] === 1){
-            b.life = 0; 
-            return;
-        }
-
-        // Calculate distance to player
-        const dx = b.x - player.x;
-        const dy = b.y - player.y;
-        if(dx*dx + dy*dy < 0.16){
-            player.health -= b.damage || 10; // assign damage when bullet is created
-            b.life = 0;
-            if(player.health < 0) player.health = 0;
+    enemyBullets.forEach(b => {
+        let nextX = b.x + Math.cos(b.a) * 0.15; let nextY = b.y + Math.sin(b.a) * 0.15;
+        if(isWall(nextX, nextY)) b.life = 0; 
+        else { b.x = nextX; b.y = nextY; b.life--; }
+        
+        if(b.life > 0 && Math.hypot(player.x - b.x, player.y - b.y) < 0.3){
+            player.health -= 10; b.life = 0;
+            if(player.health <= 0) {
+                resetGame("death"); showMessage("WACKED. ENEMIES RESPAWNED.", 3000);
+            }
         }
     });
     enemyBullets = enemyBullets.filter(b => b.life > 0);
 }
 
+function updateEnemies(){
+    if (hasEscaped) return;
+    enemies.forEach(e=>{
+        if(!e.alive) return;
+        let nx = e.x + Math.cos(e.dir) * 0.01, ny = e.y + Math.sin(e.dir) * 0.01;
+        if(!isWall(nx, ny) && !isWall(nx + Math.sign(nx - e.x)*0.2, ny + Math.sign(ny - e.y)*0.2)) { e.x = nx; e.y = ny; } 
+        else e.dir = Math.random() * Math.PI * 2; 
 
-function drawEnemyBullets(){
-    const w = canvas.width, h = canvas.height;
-
-    enemyBullets.forEach(b=>{
-        let dx = b.x - player.x, dy = b.y - player.y;
-        let dist = Math.hypot(dx, dy);
-        if(dist < 0.3 || dist > 60) return;
-
-        let angleToBullet = Math.atan2(dy, dx) - player.angle;
-        if(angleToBullet > Math.PI) angleToBullet -= 2*Math.PI;
-        if(angleToBullet < -Math.PI) angleToBullet += 2*Math.PI;
-
-        if(Math.abs(angleToBullet) < Math.PI/2){
-            let size = (h / Math.max(dist,0.1)) * 0.06;
-            size = Math.min(20, Math.max(2, size));
-            const screenX = w/2 + Math.tan(angleToBullet) * w/2;
-            ctx.fillStyle = "orange";
-            ctx.fillRect(screenX - 2, h/2 - size/2, 4, 4 + size*0.6);
+        let dx=player.x-e.x, dy=player.y-e.y;
+        if(Math.hypot(dx,dy)<6){
+            e.dir=Math.atan2(dy,dx);
+            if(e.shootCooldown<=0){
+                enemyBullets.push({x:e.x, y:e.y, a:e.dir + (Math.random()-0.5)*0.1, life:80}); e.shootCooldown=60;
+                enemyGunSound.currentTime = 0; enemyGunSound.play();
+            } else e.shootCooldown--;
         }
     });
 }
 
-// ========================
-// Player Movement
-// ========================
-function movePlayer(){
-    // Rotation
-    if(keys["ArrowLeft"])  player.angle -= 0.0375;
-    if(keys["ArrowRight"]) player.angle += 0.0375;
-
-    player.angle += mouseDelta * 0.002;
-    mouseDelta = 0;
-
-    const c = Math.cos(player.angle);
-    const s = Math.sin(player.angle);
-
-    let moveX = 0;
-    let moveY = 0;
+function updateBoss(){
+    if(!boss.alive || hasEscaped){ if(boss.isFiring){ boss.isFiring = false; miniBossGunSound.pause(); } return; }
     
-    // Forward / backward
-    if(keys["ArrowUp"]){
-        moveX += c * player.speed;
-        moveY += s * player.speed;
-    }
-    if(keys["ArrowDown"]){
-        moveX -= c * player.speed;
-        moveY -= s * player.speed;
-    }
+    boss.x += boss.dir * boss.speed;
+    if(boss.x < boss.patrolMinX){ boss.x = boss.patrolMinX; boss.dir = 1; } 
+    else if(boss.x > boss.patrolMaxX){ boss.x = boss.patrolMaxX; boss.dir = -1; }
+    if(isWall(boss.x, boss.y)) boss.dir *= -1;
 
-    // Strafing (scaled immediately)
-    if(keys["d"]){ // left
-        moveX -= s * player.speed * STRAFE_FACTOR;
-        moveY += c * player.speed * STRAFE_FACTOR;
-    }
-    if(keys["a"]){ // right
-        moveX += s * player.speed * STRAFE_FACTOR;
-        moveY -= c * player.speed * STRAFE_FACTOR;
-    }
+    let dx = player.x - boss.x, dy = player.y - boss.y;
+    boss.dirAngle = Math.atan2(dy, dx);
+    const wantsToFire = Math.hypot(dx, dy) < 8;
 
-    // Collision (split-axis = smooth sliding)
-    if(mxValid(player.x + moveX, player.y) &&
-       map[Math.floor(player.y)][Math.floor(player.x + moveX)] !== 1){
-        player.x += moveX;
-    }
-    if(mxValid(player.x, player.y + moveY) &&
-       map[Math.floor(player.y + moveY)][Math.floor(player.x)] !== 1){
-        player.y += moveY;
+    if(wantsToFire){
+        if(!boss.isFiring){ boss.isFiring = true; miniBossGunSound.currentTime = 0; miniBossGunSound.play().catch(()=>{}); }
+        if(boss.fireRate <= 0){
+            enemyBullets.push({ x: boss.x, y: boss.y, a: boss.dirAngle + (Math.random()-0.5)*0.2, life: 80 }); boss.fireRate = 8;
+        } else boss.fireRate--;
+    } else {
+        if(boss.isFiring){ boss.isFiring = false; miniBossGunSound.pause(); } boss.fireRate = 0;
     }
 }
 
-
-function mxValid(x, y){ 
-    const mx = Math.floor(x), my = Math.floor(y); 
-    return !(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H); 
+function updateItems(){
+    if(bossKey.dropped && !bossKey.collected && Math.hypot(player.x - bossKey.x, player.y - bossKey.y) < 0.7){
+        bossKey.collected = true; spaceship.unlocked = true; showMessage("KEY ACQUIRED – DOOR UNLOCKED", 3000);
+        keyPickupSound.currentTime = 0; keyPickupSound.play().catch(() => {});
+    }
+    healthPickups.forEach(p => {
+        if(!p.taken && Math.hypot(player.x - p.x, player.y - p.y) < 0.5){
+            player.health = Math.min(player.health + 30, 100); p.taken = true;
+            healthPickupSound.currentTime = 0; healthPickupSound.play();
+        }
+    });
+    ammoPickups.forEach(a => {
+        if(!a.taken && Math.hypot(player.x - a.x, player.y - a.y) < 0.5){
+            player.ammo = Math.min(player.ammo + 25, player.maxAmmo); // Tommy drum drops more ammo
+            a.taken = true;
+            ammoPickupSound.currentTime = 0; ammoPickupSound.play();
+            if(currentMag === 0 && !isReloading) triggerReload();
+        }
+    });
 }
 
-// ========================
-// Gun Rendering
-// ========================
-function drawGun(){
+function updateSpaceship() {
+    if (Math.floor(player.x) === spaceship.x && Math.floor(player.y) === spaceship.y) {
+        const allEnemiesDefeated = enemies.every(e => !e.alive) && !boss.alive;
+        if (!spaceship.unlocked) showMessage("DOOR LOCKED – FIND THE BOSS'S KEY");
+        else if (!allEnemiesDefeated) showMessage("ELIMINATE ALL RIVALS BEFORE ESCAPING!");
+        else if (!hasEscaped) {
+            hasEscaped = true; 
+            
+            hud.style.display = "none"; crosshair.style.display = "none"; objectivesDiv.style.display = "none"; 
+            showMessage("ESCAPE SUCCESSFUL!", 999999); 
+            
+            escapeSound.currentTime = 0; escapeSound.play().catch(()=>{});
+            paused = true; document.exitPointerLock(); 
+            
+            escapeSound.onended = () => {
+                titleScreen.style.display = "flex"; 
+                resetGame("full"); paused = false; gameStarted = false; msg.style.display = "none";
+                menuMusic.play().catch(()=>{}); // Bring back menu music
+                escapeSound.onended = null; 
+            };
+        }
+    }
+}
+
+// ================= THEMATIC 3D RENDER ENGINE =================
+function cast(){
     const w = canvas.width, h = canvas.height;
-    ctx.fillStyle="#444"; ctx.fillRect(w/2-40,h-150,80,150);
-    ctx.fillStyle="#999"; ctx.fillRect(w/2-10,h-200,20,50);
-    ctx.fillStyle="#000"; ctx.fillRect(w/2-6,h-195,12,20);
-    if(shooting){ ctx.fillStyle="yellow"; ctx.fillRect(w/2-5,h-205,10,15); }
-}
-
-// ========================
-// Health Packs
-// ========================
-
-function collectHealthPacks() {
-    healthPacks.forEach(pack => {
-        if(pack.collected) return;
-
-        const dx = player.x - pack.x;
-        const dy = player.y - pack.y;
-        const dist = Math.hypot(dx, dy);
-
-        // Collect if close enough
-        if(dist < 0.5){
-            player.health = Math.min(player.health + 150, 1000); // max health cap
-            pack.collected = true;
-
-            // Play sound
-            healthPickupSound.currentTime = 0;
-            healthPickupSound.play();
-
-            showTempMessage("Health Restored!", 90);
-        }
-    });
-}
-
-
-function drawHealthPacks2D() {
-    const scale = 15;
-    const offsetX = canvas.width - MAP_W*scale - 20;
-    const offsetY = canvas.height - MAP_H*scale - 20;
-
-    healthPacks.forEach(pack => {
-        if(pack.collected) return;
-        if(!healthPackImg.complete) return; // only draw if loaded
-
-        ctx.drawImage(
-            healthPackImg,
-            offsetX + pack.x*scale - 4, // center the icon
-            offsetY + pack.y*scale - 4,
-            8, 8
-        );
-    });
-}
-
-
-function drawHealthPacks3D() {
-    const w = canvas.width;
-    const h = canvas.height;
-
-    healthPacks.forEach(pack => {
-        if(pack.collected) return;
-
-        const dx = pack.x - player.x;
-        const dy = pack.y - player.y;
-        const dist = Math.hypot(dx, dy);
-
-        if(dist > 60) return;
-        if(!canSee(player.x, player.y, pack.x, pack.y)) return;
-
-        let ang = Math.atan2(dy, dx) - player.angle;
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-
-        if(Math.abs(ang) < Math.PI / 2){
-            // ✅ Correct world-anchored size
-            let size = 420 / dist;
-            size = Math.min(size, 196);
-            size = Math.max(size, 24);
-
-            const screenX = w / 2 + Math.tan(ang) * w / 2;
-
-            ctx.save();
-
-            // ❄️ Frosty blue glow (kept)
-            ctx.shadowBlur = 22 + Math.sin(performance.now() * 0.004) * 6;
-            ctx.shadowColor = "rgba(120, 200, 255, 0.9)";
-
-            ctx.drawImage(
-                healthPackImg,
-                screenX - size / 2,
-                h / 2 - size / 2,
-                size,
-                size
-            );
-
-            ctx.restore();
-        }
-    });
-}
-
-
-
-// ========================
-// Mini-map
-// ========================
-function drawMiniMap(){
-    const scale = 15, offsetX = canvas.width - MAP_W*scale - 20, offsetY = canvas.height - MAP_H*scale - 20;
     
-    // Background
-    ctx.fillStyle = "rgba(0,0,0,0.5)"; 
-    ctx.fillRect(offsetX-2, offsetY-2, MAP_W*scale+4, MAP_H*scale+4);
+    // Crimson Velvet Ceiling
+    let skyGradient = ctx.createLinearGradient(0, 0, 0, h/2);
+    skyGradient.addColorStop(0, "#1a0000"); skyGradient.addColorStop(1, "#3a0505");
+    ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, h/2);
 
-    // Map walls
-    for(let y=0; y<MAP_H; y++){
-        for(let x=0; x<MAP_W; x++){
-            ctx.fillStyle = map[y][x] === 1 ? "#888" : "rgba(0,0,0,0)";
-            ctx.fillRect(offsetX + x*scale, offsetY + y*scale, scale, scale);
+    // Polished Hardwood Floor
+    let floorGradient = ctx.createLinearGradient(0, h/2, 0, h);
+    floorGradient.addColorStop(0, "#0f0502"); floorGradient.addColorStop(1, "#2b1408");
+    ctx.fillStyle = floorGradient; ctx.fillRect(0, h/2, w, h/2);
+
+    const fov = Math.PI/3; let zBuffer = [];
+    for(let x = 0; x < w; x++){
+        let ang = player.angle - fov/2 + fov*x/w;
+        let d = 0, hit = false, side = false;
+        let rayDirX = Math.cos(ang), rayDirY = Math.sin(ang);
+        
+        while(!hit && d < 20){
+            d += 0.02;
+            let rx = player.x + rayDirX*d, ry = player.y + rayDirY*d;
+            let mx = Math.floor(rx), my = Math.floor(ry);
+            if(mx < 0 || my < 0 || mx >= MAP_W || my >= MAP_H || map[my][mx] === 1){
+                hit = true;
+                if((rx % 1) < 0.05 || (rx % 1) > 0.95) side = true; 
+            }
         }
-    }
+        
+        let correctedDist = d * Math.cos(ang - player.angle);
+        let hgt = h / (correctedDist || 1);
 
-    // Enemies
-    enemies.forEach(e => {
-        if(e.alive){
-            ctx.fillStyle = "red";
-            ctx.fillRect(offsetX + e.x*scale - 2, offsetY + e.y*scale - 2, 4, 4);
+        if(hit){
+            // Rich Mahogany Walls
+            let brightness = Math.max(0, 1 - (correctedDist / 10));
+            let r = 90 * brightness, g = 30 * brightness, b = 15 * brightness;
+            if(side){ r *= 0.6; g *= 0.6; b *= 0.6; } 
+            
+            // Faux Wallpaper Striping
+            if (Math.sin(d*10) > 0.5) { r *= 0.9; g *= 0.9; b *= 0.9; }
+
+            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            ctx.fillRect(x, (h - hgt)/2, 1, hgt);
+            
+            // Gold Trim Molding Top and Bottom
+            ctx.fillStyle = `rgba(180, 140, 40, ${brightness})`;
+            ctx.fillRect(x, (h - hgt)/2, 1, hgt * 0.05); // Top trim
+            ctx.fillRect(x, (h + hgt)/2 - (hgt * 0.05), 1, hgt * 0.05); // Bottom trim
+        }
+        zBuffer.push(correctedDist);
+    }
+    return zBuffer;
+}
+
+function drawSprites(zBuffer){
+    const w = canvas.width, h = canvas.height;
+    let drawables = [];
+    
+    drawables.push({ type: 'ship', dist: Math.hypot(spaceship.x+0.5 - player.x, spaceship.y+0.5 - player.y), obj: spaceship });
+    enemies.forEach(e => { if(e.alive) drawables.push({ type: 'enemy', dist: Math.hypot(e.x - player.x, e.y - player.y), obj: e }); });
+    if(boss.alive) drawables.push({ type: 'boss', dist: Math.hypot(boss.x - player.x, boss.y - player.y), obj: boss });
+    healthPickups.forEach(p => { if(!p.taken) drawables.push({ type: 'health', dist: Math.hypot(p.x - player.x, p.y - player.y), obj: p }); });
+    ammoPickups.forEach(a => { if(!a.taken) drawables.push({ type: 'ammo', dist: Math.hypot(a.x - player.x, a.y - player.y), obj: a }); });
+    if(bossKey.dropped && !bossKey.collected) drawables.push({ type: 'key', dist: Math.hypot(bossKey.x - player.x, bossKey.y - player.y), obj: bossKey });
+
+    drawables.sort((a,b) => b.dist - a.dist); 
+
+    drawables.forEach(d => {
+        let dist = d.dist;
+        if(dist < 0.2) return; 
+        
+        let obj = d.obj;
+        let dx = (d.type==='ship' ? obj.x+0.5 : obj.x) - player.x;
+        let dy = (d.type==='ship' ? obj.y+0.5 : obj.y) - player.y;
+        let ang = Math.atan2(dy, dx) - player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang)); 
+        
+        const forceVisible = dist < FORCE_VISIBLE_DIST;
+        if(!forceVisible && Math.abs(ang) > Math.PI/2 + 0.02) return;
+        
+        let sx = w/2 + Math.tan(ang) * w/2;
+        if(!forceVisible && (sx < 0 || sx >= w)) return;
+        if(!forceVisible && zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
+        
+        let sizeMult = d.type==='boss'? 1.2 : d.type==='ship'? 1.1 : d.type==='enemy'? 0.7 : d.type==='health'? 0.3 : 0.25;
+        let sz = Math.max(h / Math.max(dist, 0.3) * sizeMult, 20);
+        
+        if(d.type === 'enemy') {
+            ctx.drawImage(imgEnemy, sx - sz/2, h/2 - sz/2, sz, sz);
+            ctx.fillStyle = "black"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 10, sz, 6);
+            ctx.fillStyle = "#ffcc66"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 10, sz * (obj.health / 100), 6);
+        } 
+        else if(d.type === 'boss') {
+            ctx.drawImage(imgBoss, sx - sz/2, h/2 - sz/2, sz, sz);
+            ctx.fillStyle = "black"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 18, sz, 12);
+            ctx.fillStyle = "#cc0000"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 18, sz * (obj.health / obj.maxHealth), 12);
+        }
+        else if(d.type === 'health') ctx.drawImage(imgHealth, sx - sz/2, h/2 - sz/2, sz, sz);
+        else if(d.type === 'ammo') ctx.drawImage(imgAmmo, sx - sz/2, h/2 - sz/2, sz, sz);
+        else if(d.type === 'key') {
+            let bob = Math.sin(performance.now() * 0.004) * 0.05;
+            ctx.drawImage(imgKey, sx - sz/2, h/2 - sz/2 + bob * sz, sz, sz);
+        }
+        else if(d.type === 'ship') ctx.drawImage(imgShip, sx - sz/2, h/2 - sz/2, sz, sz);
+    });
+}
+
+function drawBullets(zBuffer){
+    // Player Tracer Bullets
+    bullets.forEach(b=>{
+        let dist=Math.hypot(b.x-player.x, b.y-player.y);
+        let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang)); 
+        
+        if(Math.abs(ang) < Math.PI/2){
+            let sx=canvas.width/2+Math.tan(ang)*canvas.width/2;
+            if(sx>=0 && sx<canvas.width && zBuffer[Math.floor(sx)]>dist){
+                let sz=(canvas.height/Math.max(dist, 0.3))*0.15;
+                ctx.fillStyle="#ffaa00"; ctx.fillRect(sx-6, canvas.height/2-sz/2, 12, sz); // Wide gold
+                ctx.fillStyle="#ffffff"; ctx.fillRect(sx-2, canvas.height/2-sz/2, 4, sz);  // Inner white
+            }
         }
     });
 
-    // Enemy bullets
+    // Enemy Tracer Bullets
     enemyBullets.forEach(b => {
-        ctx.fillStyle = "orange";
-        ctx.fillRect(offsetX + b.x*scale - 1, offsetY + b.y*scale - 1, 2, 2);
-    });
-
-    
-    // Player
-    ctx.fillStyle = "cyan"; 
-    ctx.fillRect(offsetX + player.x*scale - 3, offsetY + player.y*scale - 3, 6, 6);
-}
-
-// ------------------BAR-------------------
-
-function drawStatusBar() {
-    const w = canvas.width;
-    const h = canvas.height;
-    const barY = h - STATUS_BAR_HEIGHT;
-
-    // --- Background ---
-    ctx.fillStyle = "#3a2a4a"; // dark background
-    ctx.fillRect(0, barY, w, STATUS_BAR_HEIGHT);
-
-    // --- Border ---
-    ctx.strokeStyle = "#0ff";
-    ctx.lineWidth = 3; // slightly thicker for visibility
-    ctx.strokeRect(0, barY, w, STATUS_BAR_HEIGHT);
-
-    ctx.textBaseline = "middle";
-    ctx.font = "28px Consolas"; // bigger letters
-
-    // --- Items / Ammo (Left) ---
-    const collected = items.filter(i => i.collected).length;
-    ctx.fillStyle = "#0ff";
-    ctx.fillText(`ITEMS: ${collected}/${items.length}`, 30, barY + 35); // moved slightly down
-
-    // --- Health (Right) ---
-    ctx.fillStyle = "#f00"; // classic red
-    ctx.fillText(`HEALTH: ${Math.max(0, Math.round(player.health))}`, w - 260, barY + 35);
-
-    // --- Lives / 1-UP (Right) ---
-    ctx.fillStyle = "#0f0"; // green
-    ctx.fillText(`LIVES: ${player.lives}`, w - 260, barY + 75);
-
-    // --- Player Face (Center) ---
-    const faceSize = 90; // bigger face
-    const faceX = w / 2 - faceSize / 2;
-    const faceY = barY + 10;
-    const faceImg = shooting ? faceFire : faceIdle;
-
-    if (faceImg.complete) {
-        ctx.drawImage(faceImg, faceX, faceY, faceSize, faceSize);
-    }
-
-    // --- Face frame ---
-    ctx.strokeStyle = "#0ff";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(faceX - 2, faceY - 2, faceSize + 4, faceSize + 4);
-}
-
-
-// --------------------OneUPs------------------
-
-function collectOneUps() {
-    oneUps.forEach(up => {
-        if (up.collected) return;
-
-        const dx = player.x - up.x;
-        const dy = player.y - up.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist < 0.5) {
-            up.collected = true;
-            player.lives++;
-
-            oneUpSound.currentTime = 0;
-            oneUpSound.play().catch(()=>{});
-
-            showTempMessage("1-UP!", 90);
-        }
+        let dist=Math.hypot(b.x-player.x, b.y-player.y);
+        let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; ang = Math.atan2(Math.sin(ang), Math.cos(ang));
+        if(Math.abs(ang) > Math.PI/2 + 0.02) return;
+        
+        let sx = canvas.width/2 + Math.tan(ang) * canvas.width/2; 
+        if(sx < 0 || sx >= canvas.width) return;
+        if(zBuffer[Math.max(0, Math.min(Math.floor(sx), zBuffer.length - 1))] < dist) return;
+        
+        let size = Math.max(canvas.height / Math.max(dist, 0.3) * 0.1, 4);
+        let height = size * 3; 
+        
+        ctx.fillStyle = "#ff5500"; ctx.fillRect(sx - size, canvas.height/2 - height/2 - size, size*2, height + size*2);
+        ctx.fillStyle = "#ffffff"; ctx.fillRect(sx - size/2, canvas.height/2 - height/2, size, height); 
     });
 }
 
-function drawOneUps3D() {
-    const w = canvas.width;
-    const h = canvas.height;
-
-    oneUps.forEach(up => {
-        if (up.collected) return;
-
-        const dx = up.x - player.x;
-        const dy = up.y - player.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist > 60) return;
-        if (!canSee(player.x, player.y, up.x, up.y)) return;
-
-        let ang = Math.atan2(dy, dx) - player.angle;
-        ang = Math.atan2(Math.sin(ang), Math.cos(ang));
-
-        if (Math.abs(ang) < Math.PI / 2) {
-            let size = 420 / dist;
-            size = Math.min(size, 160);
-            size = Math.max(size, 32);
-
-            const screenX = w / 2 + Math.tan(ang) * w / 2;
-
-            ctx.save();
-
-            // Green glow = classic 1-UP vibe
-            ctx.shadowBlur = 24;
-            ctx.shadowColor = "rgba(0,255,120,0.9)";
-
-            ctx.drawImage(
-                oneUpImg,
-                screenX - size / 2,
-                h / 2 - size / 2,
-                size,
-                size
-            );
-
-            ctx.restore();
-        }
-    });
-}
-
-function drawOneUps2D() {
-    const scale = 15;
-    const offsetX = canvas.width - MAP_W * scale - 20;
-    const offsetY = canvas.height - MAP_H * scale - 20;
-
-    oneUps.forEach(up => {
-        if (up.collected) return;
-        ctx.fillStyle = "lime";
-        ctx.fillRect(
-            offsetX + up.x * scale - 2,
-            offsetY + up.y * scale - 2,
-            4, 4
-        );
-    });
-}
-
-
-// ========================
-// HUD
-// ========================
-function updateHUD(){ 
-    const collected = items.filter(it => it.collected).length;
-    const total = items.length;
-}
-
-// ========================
-// End Conditions
-// ========================
-function checkEndConditions() {
-    if (player.health <= 0 && !gameOver && !gameWin) {
-
-        player.lives--;
-
-        if (player.lives > 0) {
-            // Respawn player ONLY
-            player.health = 1000;
-            player.x = 3.5;
-            player.y = 3.5;
-            player.angle = 0;
-
-            bullets = [];
-            enemyBullets = [];
-
-        } else {
-            gameOver = true;
-            endTimer = 120;
-        }
-    }
-
-    collectItems();
-    checkCarEscape();
-}
-
-function drawEndOverlay(){
-    if(!gameOver && !gameWin) return;
-
-    // Stop all sounds immediately when overlay appears
-    stopAllSounds();
-
+// Draw The Tommy Gun
+function drawGun(){
+    if (hasEscaped) return; 
     const w = canvas.width, h = canvas.height;
-    ctx.save(); 
-    ctx.textAlign="center";
-
-    if(gameOver){
-        ctx.fillStyle="rgba(0,0,0,0.6)";
-        ctx.fillRect(w/2-300,h/2-80,600,160);
-        ctx.fillStyle="red";
-        ctx.font="72px Consolas";
-        ctx.fillText("GAME OVER", w/2, h/2-10);
-        ctx.font="20px Consolas";
-        ctx.fillStyle="#f88";
-        ctx.fillText("Returning to menu...", w/2, h/2+36);
+    
+    let reloadOffset = 0, reloadShake = 0;
+    if(isReloading) {
+        let t = reloadTimer / 60; 
+        reloadOffset = Math.sin(t * Math.PI) * 200; 
+        reloadShake = Math.sin(reloadTimer * 0.8) * 0.1; 
     }
 
-    if(gameWin){
-        ctx.fillStyle="rgba(0,0,0,0.6)";
-        ctx.fillRect(w/2-300,h/2-80,600,160);
-        ctx.fillStyle="lime";
-        ctx.font="72px Consolas";
-        ctx.fillText("CONGRATS!", w/2, h/2-10);
-        ctx.font="20px Consolas";
-        ctx.fillStyle="#bdf";
-        ctx.fillText("All items collected! Code: TFTI", w/2, h/2+36);
-    }
+    ctx.save();
+    ctx.translate(w/2, h + reloadOffset);
+    if(isReloading) ctx.rotate(reloadShake);
 
+    // Barrel
+    ctx.fillStyle="#1a1a1a"; ctx.fillRect(-8, -250, 16, 160); 
+    // Foregrip (Wood)
+    ctx.fillStyle="#4a2511"; ctx.fillRect(-12, -180, 24, 70); 
+    // Body
+    ctx.fillStyle="#2a2a2a"; ctx.fillRect(-20, -100, 40, 100); 
+    // Drum Mag
+    ctx.fillStyle="#111"; ctx.beginPath(); ctx.arc(0, -90, 45, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle="#333"; ctx.lineWidth=3; ctx.stroke(); // Drum details
+    
+    if(fireCooldown > 4 && !isReloading){ 
+        // Classic Starburst Muzzle Flash
+        ctx.fillStyle="rgba(255, 150, 0, 0.8)"; 
+        ctx.beginPath(); ctx.arc(0, -260, 40, 0, Math.PI*2); ctx.fill(); 
+        ctx.fillStyle="white";
+        ctx.beginPath(); ctx.arc(0, -260, 15, 0, Math.PI*2); ctx.fill(); 
+    }
+    
     ctx.restore();
-    endTimer--; 
-    if(endTimer <= 0) resetToMenu();
 }
 
-// ========================
-// Reset / Init
-// ========================
-
-// Reset / init
-function resetToMenu() {
-    try {
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
-    } catch(e){}
-
-    gameStarted = false;
-    gameOver = false;
-    gameWin = false;
-    endTimer = 0;
-
-    bullets = [];
-    enemyBullets = [];
-
-    hud.innerText = "";
-    startMenu.style.display = "flex";
-    msg.style.display = "block";
-
-    if (document.pointerLockElement === canvas) {
-        document.exitPointerLock?.();
-    }
-    playMenuMusic();
-}
-
-function initGame() {
-    player = createPlayer();
-
-    bullets = [];
-    enemyBullets = [];
-
-    initEnemies();       // enemies reset ONLY here
-    initItemsAndCar();   // items reset ONLY here
-    resetPickups();
-
-    gameOver = false;
-    gameWin = false;
-    endTimer = 0;
-}
-
-function initEnemies(){
-    enemies = enemiesTemplate.map(e => ({
-        ...e,
-        alive: true,
-        health: ENEMY_TYPES[e.type].health,
-        shootCooldown: 0,
-        state: "idle",
-        dir: Math.random() * Math.PI * 2,
-        stateTimer: 0
-    }));
-}
-
-// ============================
-// Stop All Sounds Function
-// ============================
-function stopAllSounds() {
-    // Music
-    bgMusic.pause();
-    bgMusic.currentTime = 0;
-
-    // Gun sounds
-    [shootSound, enemyGunSound, sndRevolver, sndShotgun, sndTommy, sndTurret].forEach(snd => {
-        snd.pause();
-        snd.currentTime = 0;
-    });
-
-    // Voice / FX sounds
-    [sndTommyTalk, sndTurretLaugh, sndTurretDeath, sndDirectHit, sndRevolverTalk, sndRobotDeath, itemPickupSound, healthPickupSound, oneUpSound].forEach(snd => {
-        snd.pause();
-        snd.currentTime = 0;
-    });
-}
-
-function resetPickups() {
-    healthPacks.forEach(pack => pack.collected = false);
-    oneUps.forEach(oneUp => oneUp.collected = false);
-}
-
-
-// ============================
-// Call when ending the game
-// ============================
-function handleGameEnd() {
-    stopAllSounds(); // stop everything immediately
-    gameStarted = false; // ensure the game is marked as not running
-}
-
-// ============================
-// Integrate into your existing code
-// ============================
-
-// When player dies and no lives remain:
-if(gameOver) handleGameEnd();
-
-// When player wins:
-if(gameWin) handleGameEnd();
-
-// When returning to menu:
-function resetToMenu() {
-    stopAllSounds(); // stop all sounds immediately
-    gameStarted = false;
-    gameOver = false;
-    gameWin = false;
-    endTimer = 0;
-
-    bullets = [];
-    enemyBullets = [];
-
-    hud.innerText = "";
-    startMenu.style.display = "flex";
-    msg.style.display = "block";
-
-    if (document.pointerLockElement === canvas) {
-        document.exitPointerLock?.();
+function showMessage(text, duration = 2000) { 
+    msg.innerText = text; msg.style.display = "block";
+    if (text !== "ESCAPE SUCCESSFUL!") {
+        setTimeout(() => {if(msg.innerText === text && !hasEscaped) msg.style.display = "none";}, duration); 
     }
 }
 
+function updateObjectivesHUD() {
+    const allEnemiesDefeated = enemies.every(e => !e.alive) && !boss.alive;
+    objectivesDiv.innerHTML = `
+        <b>THE HIT LIST</b><br><br>
+        <span style="color:${bossKey.collected ? '#ffcc66' : '#fff'}">${bossKey.collected ? '✔' : '☐'} Take the Boss's Key</span><br>
+        <span style="color:${allEnemiesDefeated ? '#ffcc66' : '#fff'}">${allEnemiesDefeated ? '✔' : '☐'} Eliminate Rival Family</span><br>
+        <span style="color:${hasEscaped ? '#ffcc66' : '#fff'}">${hasEscaped ? '✔' : '☐'} Escape Out Back</span>
+    `;
+}
 
-// Main loop
+function resetGame(type = "death") {
+    player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:50, maxAmmo:200 }; 
+    currentMag = magSize; isReloading = false; reloadTimer = 0; hasEscaped = false;
+    bullets = []; enemyBullets = [];
+
+    if (type === "full") {
+        enemies = enemiesTemplate.map(e => ({ ...e }));
+        healthPickups = healthPickupsTemplate.map(p => ({ ...p, taken:false }));
+        ammoPickups = [];
+        boss.alive = true; boss.health = boss.maxHealth; boss.x = boss.homeX; boss.y = boss.homeY; boss.isFiring = false;
+        bossKey.collected = false; bossKey.dropped = false; spaceship.unlocked = false;
+    } else if (type === "death") {
+        enemies = enemiesTemplate.map(e => ({ ...e }));
+        healthPickups = healthPickupsTemplate.map(p => ({ ...p, taken:false }));
+        ammoPickups = []; 
+    }
+}
+
+// ================= LOOP =================
 function loop(){
     requestAnimationFrame(loop);
-    if(!gameStarted || paused) return;
-    if(!gameOver && !gameWin){
-        movePlayer();
-        if(fireCooldown>0) fireCooldown--;
-        if(shooting && fireCooldown<=0){
-            shootEnemies();
-            fireCooldown = 10; // player fire rate; tweak if you want faster/slower
+    if(!gameStarted || (paused && !hasEscaped)) return;
+
+    move();
+    if(fireCooldown > 0) fireCooldown--;
+    
+    if(isReloading) {
+        reloadTimer--;
+        if(reloadTimer <= 0) {
+            isReloading = false;
+            let needed = magSize;
+            if(player.ammo >= needed) { currentMag = needed; player.ammo -= needed; } 
+            else { currentMag = player.ammo; player.ammo = 0; }
         }
-        updateBullets();
-        updateEnemyBullets();
-        collectHealthPacks();
-	collectOneUps();
-
     }
-    castRays();
-    //drawOneUps2D();
-    //drawItemsAndCar(); // draw collectibles and car 
-    drawItemsAndCar3D(zBuffer); // draw collectibles and car   
-    drawHealthPacks3D();
-    drawOneUps3D(); 
-    drawEnemies();
-    drawBullets();
-    drawEnemyBullets();
-    drawGun();
-    drawStatusBar();
-    //drawMiniMap();
-    //drawHealthPacks2D();
-
-
-
-              
-    updateHUD();
-    checkEndConditions();
-    drawEndOverlay();
-
-    if(tempMsgTimer > 0){
-    const w = canvas.width, h = canvas.height;
-    ctx.save();
-    ctx.textAlign = "center";
-    ctx.font = "32px Consolas";
-    ctx.fillStyle = "#0ff";
-    ctx.shadowColor = "#000";
-    ctx.shadowBlur = 10;
-    ctx.fillText(tempMsg, w/2, h/2);
-    ctx.restore();
-    tempMsgTimer--;
+    
+    if (!hasEscaped) {
+        updateBullets(); updateEnemies(); updateBoss(); updateItems(); updateSpaceship();
     }
-
+    
+    const zBuffer = cast();
+    drawSprites(zBuffer);
+    
+    if (!hasEscaped) {
+        drawBullets(zBuffer); drawGun();
+    }
+    
+    updateObjectivesHUD();
+    let ammoDisplay = isReloading ? "RELOADING" : `${currentMag} / ${player.ammo}`;
+    hud.innerText = `HP: ${player.health}  |  DRUM: ${ammoDisplay}`;
 }
+
 loop();
-
-// Pause music if leaving page
-document.addEventListener("visibilitychange", ()=>{ if(document.hidden) bgMusic.pause(); else if(gameStarted && !gameOver && !gameWin) bgMusic.play().catch(()=>{}); });
-
-// ESC fallback
-document.addEventListener("keydown",(e)=>{ if(e.key==="Escape" && !gameStarted){ resetToMenu(); } });
 </script>
 </body>
 </html>
-
-
-
-
-
