@@ -53,19 +53,43 @@
     #splashScreen { background: #000; z-index: 30; transition: opacity 1s ease; }
     .fade-text { font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards; letter-spacing: 5px; text-transform: uppercase; }
 
+    /* Cinematic Background Pan */
+    @keyframes bgPan {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
     .menu-bg {
         background: linear-gradient(to bottom, rgba(0,5,20,0.85), rgba(0,10,40,0.95)), url("Connect4/SpaceB.jpg") no-repeat center center;
-        background-size: cover; display: none; backdrop-filter: blur(5px);
+        background-size: 150% 150%; display: none; backdrop-filter: blur(5px);
+        animation: bgPan 30s linear infinite;
     }
 
+    /* Title Animations */
+    @keyframes titleDrop {
+        0% { transform: translateY(-100px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    
     #titleScreen h1 {
         font-size: 60px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px;
         margin-top: -30px;
+        animation: titleDrop 1.2s cubic-bezier(0.2, 1, 0.3, 1) forwards;
     }
     
     #howToScreen h1 { font-size: 36px; margin-bottom: 10px; }
 
-    .menu-buttons { display:flex; flex-direction:column; gap:15px; width: 300px; }
+    /* Button Animations */
+    @keyframes buttonsSlideUp {
+        0% { transform: translateY(40px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .menu-buttons { 
+        display:flex; flex-direction:column; gap:15px; width: 300px; 
+        opacity: 0; animation: buttonsSlideUp 1s ease forwards; animation-delay: 0.5s;
+    }
     
     button {
         font-family: 'Consolas', monospace; font-size: 18px; padding: 12px;
@@ -77,7 +101,7 @@
     #pauseScreen { background: rgba(0, 5, 15, 0.85); display: none; z-index: 25; backdrop-filter: blur(4px); }
     #pauseScreen h1 { font-size: 50px; color: #fff; margin-bottom: 30px; letter-spacing: 4px; }
 
-    /* Adjusted Instructions Panel to fit small screens */
+    /* Instructions Panel */
     .instructions {
         font-size: 16px; max-width: 600px; text-align: center; line-height: 1.5;
         background: rgba(0, 10, 25, 0.7); padding: 15px; border: 1px solid #00ffff;
@@ -129,7 +153,7 @@
 
 <div id="pauseScreen" class="screen">
     <h1>GAME PAUSED</h1>
-    <div class="menu-buttons">
+    <div class="menu-buttons" style="opacity:1; animation:none;">
         <button id="resumeBtn">RESUME</button>
         <button id="restartBtn">RESTART LEVEL</button>
         <button id="quitBtn">QUIT TO MENU</button>
@@ -223,11 +247,21 @@ function startGame() {
     canvas.requestPointerLock();
 }
 
-function showHUD() { hud.style.display = "block"; crosshair.style.display = "block"; objectivesDiv.style.display = "block"; }
-function hideHUD() { hud.style.display = "none"; crosshair.style.display = "none"; objectivesDiv.style.display = "none"; msg.style.display = "none"; }
+function showHUD() { 
+    hud.style.display = "block"; 
+    crosshair.style.display = "block"; 
+    objectivesDiv.style.display = "block"; 
+}
+
+function hideHUD() { 
+    hud.style.display = "none"; 
+    crosshair.style.display = "none"; 
+    objectivesDiv.style.display = "none"; 
+    if(!hasEscaped) msg.style.display = "none"; 
+}
 
 function togglePause() {
-    if(!gameStarted) return;
+    if(!gameStarted || hasEscaped) return; // Prevent pausing during escape
     paused = !paused;
     if(paused) {
         document.exitPointerLock();
@@ -297,21 +331,21 @@ let bullets = [], enemyBullets = [];
 
 document.addEventListener("keydown", e => {
     keys[e.key.toLowerCase()] = true;
-    if (e.key.toLowerCase() === "p") togglePause();
-    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused) triggerReload();
+    if (e.key.toLowerCase() === "p" && !hasEscaped) togglePause();
+    if (e.key.toLowerCase() === "r" && currentMag < magSize && player.ammo > 0 && !isReloading && gameStarted && !paused && !hasEscaped) triggerReload();
     if ((e.code === "Space" || e.key === " ") && canShoot()) shoot();
 });
 
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
-document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas) mouseDX=e.movementX; });
+document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas && !hasEscaped) mouseDX=e.movementX; });
 
-// Removed mouse shooting entirely. Click only locks pointer.
+// Mouse click ONLY locks pointer, firing mapped strictly to Spacebar
 canvas.onclick = () => {
-    if(!gameStarted || paused) return;
+    if(!gameStarted || paused || hasEscaped) return;
     if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); } 
 };
 
-function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted; }
+function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted && !hasEscaped; }
 
 function shoot(){
     bullets.push({ x: player.x + Math.cos(player.angle) * 0.3, y: player.y + Math.sin(player.angle) * 0.3, a: player.angle, life: 80 });
@@ -330,6 +364,8 @@ function triggerReload() {
 function isWall(x, y){ let tx = Math.floor(x), ty = Math.floor(y); return map[ty] && map[ty][tx] !== 0; }
 
 function move(){
+    if (hasEscaped) return; // Lock movement if escaping
+    
     player.angle += mouseDX * 0.002; 
     mouseDX = 0;
     
@@ -400,6 +436,7 @@ function updateBullets(){
 }
 
 function updateEnemies(){
+    if (hasEscaped) return;
     enemies.forEach(e=>{
         if(!e.alive) return;
         let nx = e.x + Math.cos(e.dir) * 0.01, ny = e.y + Math.sin(e.dir) * 0.01;
@@ -419,7 +456,7 @@ function updateEnemies(){
 }
 
 function updateBoss(){
-    if(!boss.alive){ if(boss.isFiring){ boss.isFiring = false; miniBossGunSound.pause(); } return; }
+    if(!boss.alive || hasEscaped){ if(boss.isFiring){ boss.isFiring = false; miniBossGunSound.pause(); } return; }
     
     boss.x += boss.dir * boss.speed;
     if(boss.x < boss.patrolMinX){ boss.x = boss.patrolMinX; boss.dir = 1; } 
@@ -454,7 +491,6 @@ function updateItems(){
     });
     ammoPickups.forEach(a => {
         if(!a.taken && Math.hypot(player.x - a.x, player.y - a.y) < 0.5){
-            // Ammo pickups explicitly reward exactly +3 bullets
             player.ammo = Math.min(player.ammo + 3, player.maxAmmo); 
             a.taken = true;
             ammoPickupSound.currentTime = 0; ammoPickupSound.play();
@@ -470,18 +506,30 @@ function updateSpaceship() {
         else if (!allEnemiesDefeated) showMessage("DEFEAT ALL ENEMIES BEFORE ESCAPING!");
         else if (!hasEscaped) {
             hasEscaped = true; 
-            showMessage("ESCAPE SUCCESSFUL!", 20000);
-            spaceshipEngineSound.currentTime = 0; spaceshipEngineSound.play().catch(()=>{});
-            paused = true; bgMusic.pause(); document.exitPointerLock(); hideHUD();
             
-            const codeMessage = document.createElement("div"); codeMessage.textContent = "Code: LYLB";
-            codeMessage.style.cssText = "position:absolute; top:60%; left:50%; transform:translateX(-50%); font-size:30px; color:yellow; font-family:Consolas; text-shadow:0 0 10px #000; z-index:1000;";
-            document.body.appendChild(codeMessage);
+            // Hide everything EXCEPT the central message and view
+            hud.style.display = "none"; 
+            crosshair.style.display = "none"; 
+            objectivesDiv.style.display = "none"; 
             
+            showMessage("ESCAPE SUCCESSFUL!", 10000); 
+            
+            spaceshipEngineSound.currentTime = 0; 
+            spaceshipEngineSound.play().catch(()=>{});
+            
+            paused = true; 
+            bgMusic.pause(); 
+            document.exitPointerLock(); 
+            
+            // Unskippable wait before dumping to main menu
             setTimeout(() => {
-                codeMessage.remove(); spaceshipEngineSound.pause(); spaceshipEngineSound.currentTime = 0;
-                titleScreen.style.display = "flex"; resetGame("full"); paused = false; gameStarted = false;
-            }, 20000);
+                spaceshipEngineSound.pause(); spaceshipEngineSound.currentTime = 0;
+                titleScreen.style.display = "flex"; 
+                resetGame("full"); 
+                paused = false; 
+                gameStarted = false;
+                msg.style.display = "none";
+            }, 8000); 
         }
     }
 }
@@ -531,7 +579,6 @@ function cast(){
         let hgt = h / (correctedDist || 1);
 
         if(hit){
-            // No shadowBlur here. Strict RGB scaling for fast frames.
             let brightness = Math.max(0, 1 - (correctedDist / 12));
             let r = 50 * brightness, g = 70 * brightness, b = 100 * brightness;
             if(side){ r *= 0.7; g *= 0.7; b *= 0.7; } 
@@ -650,6 +697,8 @@ function drawBullets(zBuffer){
 }
 
 function drawGun(){
+    if (hasEscaped) return; // Hide gun during escape sequence
+    
     const w = canvas.width, h = canvas.height;
     
     let reloadOffset = 0;
@@ -682,7 +731,7 @@ function drawGun(){
 function showMessage(text, duration = 2000) { 
     msg.innerText = text; 
     msg.style.display = "block";
-    setTimeout(() => {if(msg.innerText === text) msg.style.display = "none";}, duration); 
+    setTimeout(() => {if(msg.innerText === text && !hasEscaped) msg.style.display = "none";}, duration); 
 }
 
 function updateObjectivesHUD() {
@@ -720,7 +769,7 @@ function resetGame(type = "death") {
 // ================= LOOP =================
 function loop(){
     requestAnimationFrame(loop);
-    if(!gameStarted || paused) return;
+    if(!gameStarted || paused && !hasEscaped) return;
 
     move();
     
@@ -736,12 +785,18 @@ function loop(){
         }
     }
     
-    updateBullets(); updateEnemies(); updateBoss(); updateItems(); updateSpaceship();
+    // Only update gameplay elements if we haven't escaped yet
+    if (!hasEscaped) {
+        updateBullets(); updateEnemies(); updateBoss(); updateItems(); updateSpaceship();
+    }
     
     const zBuffer = cast();
     
     drawSprites(zBuffer);
-    drawBullets(zBuffer); drawGun();
+    
+    if (!hasEscaped) {
+        drawBullets(zBuffer); drawGun();
+    }
     
     updateObjectivesHUD();
     let ammoDisplay = isReloading ? "RELOADING" : `${currentMag} / ${player.ammo}`;
