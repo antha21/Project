@@ -12,36 +12,31 @@
     #hud { 
         position:absolute; bottom:20px; left:20px; 
         color:#00ffff; font-size:24px; z-index:10; 
-        text-shadow: 0 0 8px #00ffff; 
         background: rgba(0, 15, 30, 0.6); 
         padding: 10px 20px; border: 1px solid #00ffff; border-radius: 5px;
         display: none;
     }
     
-    /* Thematic In-Game Messages */
     #msg { 
         position:absolute; top:30%; left:50%; transform: translate(-50%, -50%);
-        color:#00ffff; font-size:28px; z-index:9; text-shadow: 0 0 10px #00ffff; 
+        color:#00ffff; font-size:28px; z-index:9; 
         text-align: center; background: rgba(0, 15, 30, 0.85);
         padding: 20px 40px; border: 2px solid #00ffff; border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0,255,255,0.3); text-transform: uppercase;
-        display: none; 
+        text-transform: uppercase; display: none; 
     }
     
     #objectives {
         position:absolute; top:20px; right:20px; 
         background:rgba(0, 15, 30, 0.7); border: 1px solid #00ffff; 
         padding:15px; color:#fff; font-size:18px; line-height:1.6; 
-        z-index:10; border-radius: 5px; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-        display: none;
+        z-index:10; border-radius: 5px; display: none;
     }
     
-    /* Halo-style Crosshair */
     #crosshair {
         position: absolute; top: 50%; left: 50%; width: 30px; height: 30px;
         transform: translate(-50%, -50%); pointer-events: none; z-index: 5; display: none;
     }
-    .ch-part { position: absolute; background: rgba(0, 255, 255, 0.8); box-shadow: 0 0 5px #00ffff; }
+    .ch-part { position: absolute; background: rgba(0, 255, 255, 0.8); }
     .ch-top { top: 0; left: 14px; width: 2px; height: 8px; }
     .ch-bot { bottom: 0; left: 14px; width: 2px; height: 8px; }
     .ch-left { top: 14px; left: 0; width: 8px; height: 2px; }
@@ -56,60 +51,37 @@
     }
     
     #splashScreen { background: #000; z-index: 30; transition: opacity 1s ease; }
-    .fade-text {
-        font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards;
-        text-shadow: 0 0 15px #7df9ff; letter-spacing: 5px; text-transform: uppercase;
-    }
+    .fade-text { font-size: 40px; opacity: 0; animation: splashFade 4s ease forwards; letter-spacing: 5px; text-transform: uppercase; }
 
-    @keyframes bgPan {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
     .menu-bg {
         background: linear-gradient(to bottom, rgba(0,5,20,0.85), rgba(0,10,40,0.95)), url("Connect4/SpaceB.jpg") no-repeat center center;
-        background-size: 150% 150%; display: none; backdrop-filter: blur(5px);
-        animation: bgPan 30s linear infinite;
+        background-size: cover; display: none; backdrop-filter: blur(5px);
     }
 
-    @keyframes titleDrop {
-        0% { transform: translateY(-100px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-    }
     #titleScreen h1 {
-        font-size: 70px; margin-bottom: 50px; text-transform: uppercase; letter-spacing: 2px;
-        text-shadow: 0 0 10px #00ffff, 0 0 30px #0088ff; margin-top: -50px;
-        animation: titleDrop 1.2s cubic-bezier(0.2, 1, 0.3, 1) forwards;
+        font-size: 60px; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px;
+        margin-top: -30px;
     }
     
-    #howToScreen h1 { font-size: 40px; margin-bottom: 15px; text-shadow: 0 0 15px #00ffff; }
+    #howToScreen h1 { font-size: 36px; margin-bottom: 10px; }
 
-    @keyframes buttonsSlideUp {
-        0% { transform: translateY(40px); opacity: 0; }
-        100% { transform: translateY(0); opacity: 1; }
-    }
-    .menu-buttons { 
-        display:flex; flex-direction:column; gap:15px; width: 300px;
-        opacity: 0; animation: buttonsSlideUp 1s ease forwards; animation-delay: 0.5s;
-    }
+    .menu-buttons { display:flex; flex-direction:column; gap:15px; width: 300px; }
     
     button {
-        font-family: 'Consolas', monospace; font-size: 20px; padding: 12px;
+        font-family: 'Consolas', monospace; font-size: 18px; padding: 12px;
         background: rgba(0, 20, 40, 0.6); border: 1px solid #00ffff; color: #00ffff;
         cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-        transition: all 0.2s ease; box-shadow: inset 0 0 10px rgba(0,255,255,0.1);
     }
-    button:hover { background: rgba(0, 255, 255, 0.2); box-shadow: 0 0 15px rgba(0, 255, 255, 0.6); transform: scale(1.02); }
+    button:hover { background: rgba(0, 255, 255, 0.2); transform: scale(1.02); }
 
-    /* Pause Menu */
     #pauseScreen { background: rgba(0, 5, 15, 0.85); display: none; z-index: 25; backdrop-filter: blur(4px); }
-    #pauseScreen h1 { font-size: 50px; color: #fff; text-shadow: 0 0 20px #fff; margin-bottom: 30px; letter-spacing: 4px; }
+    #pauseScreen h1 { font-size: 50px; color: #fff; margin-bottom: 30px; letter-spacing: 4px; }
 
-    /* Instructions Panel */
+    /* Adjusted Instructions Panel to fit small screens */
     .instructions {
-        font-size: 18px; max-width: 600px; text-align: center; line-height: 1.6;
-        background: rgba(0, 10, 25, 0.7); padding: 20px; border: 1px solid #00ffff;
-        border-radius: 4px; margin-bottom: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+        font-size: 16px; max-width: 600px; text-align: center; line-height: 1.5;
+        background: rgba(0, 10, 25, 0.7); padding: 15px; border: 1px solid #00ffff;
+        border-radius: 4px; margin-bottom: 15px;
     }
     .instructions span { color: #fff; font-weight: bold; }
 
@@ -148,7 +120,7 @@
         <br>
         <p><span>W, A, S, D</span> → Move & Strafe</p>
         <p><span>Mouse</span> → Look Around</p>
-        <p><span>Space</span> → Fire Weapon</p>
+        <p><span>Spacebar</span> → Fire Weapon</p>
         <p><span>R</span> → Reload</p>
         <p><span>P</span> → Pause Menu</p>
     </div>
@@ -157,7 +129,7 @@
 
 <div id="pauseScreen" class="screen">
     <h1>GAME PAUSED</h1>
-    <div class="menu-buttons" style="opacity:1; animation:none;">
+    <div class="menu-buttons">
         <button id="resumeBtn">RESUME</button>
         <button id="restartBtn">RESTART LEVEL</button>
         <button id="quitBtn">QUIT TO MENU</button>
@@ -213,7 +185,7 @@ document.getElementById("backBtn").onclick = () => { howToScreen.style.display =
 
 document.getElementById("resumeBtn").onclick = togglePause;
 
-// Full Level Resets via Menu
+// Full Restart from Pause
 document.getElementById("restartBtn").onclick = () => { 
     resetGame("full"); 
     paused = false;
@@ -223,6 +195,7 @@ document.getElementById("restartBtn").onclick = () => {
     bgMusic.play().catch(()=>{});
 };
 
+// Full Quit to Menu
 document.getElementById("quitBtn").onclick = () => { 
     paused = false; 
     pauseScreen.style.display = "none";
@@ -230,9 +203,10 @@ document.getElementById("quitBtn").onclick = () => {
     gameStarted = false; 
     hideHUD(); 
     
-    // Stop all audio forcefully
+    // Hard stop all audio
     bgMusic.pause(); bgMusic.currentTime = 0;
-    miniBossGunSound.pause(); spaceshipEngineSound.pause();
+    miniBossGunSound.pause(); miniBossGunSound.currentTime = 0;
+    spaceshipEngineSound.pause(); spaceshipEngineSound.currentTime = 0;
     
     titleScreen.style.display = "flex"; 
     resetGame("full");
@@ -241,7 +215,7 @@ document.getElementById("quitBtn").onclick = () => {
 function startGame() {
     titleScreen.style.display = "none";
     gameStarted = true;
-    resetGame("full"); // Fresh state
+    resetGame("full"); 
     showHUD();
     showMessage("CLICK TO LOCK MOUSE", 3000);
     bgMusic.currentTime = 0;
@@ -258,7 +232,7 @@ function togglePause() {
     if(paused) {
         document.exitPointerLock();
         pauseScreen.style.display = "flex";
-        // Halt Audio
+        // Halt Audio entirely on pause
         bgMusic.pause();
         miniBossGunSound.pause();
         spaceshipEngineSound.pause();
@@ -267,6 +241,7 @@ function togglePause() {
         canvas.requestPointerLock();
         // Resume Audio
         bgMusic.play().catch(()=>{});
+        if (boss.isFiring && boss.alive) miniBossGunSound.play().catch(()=>{});
     }
 }
 
@@ -285,6 +260,7 @@ const map = [
 ];
 const MAP_W = map[0].length, MAP_H = map.length;
 
+// Starting ammo: 5 in mag, 5 in reserve = 10 total.
 let player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:5, maxAmmo:40 }; 
 
 let magSize = 5;
@@ -307,7 +283,6 @@ const spaceship = { x: 22, y: 1, unlocked: false };
 const bossKey = { x: null, y: null, collected: false, dropped: false };
 let ammoPickups = [];
 
-// Environment Dynamics
 let envStars = Array.from({length: 150}, () => ({ angle: Math.random() * Math.PI * 2, height: Math.random() }));
 let ambientShips = Array.from({length: 3}, () => ({ a: Math.random()*Math.PI*2, h: 0.1 + Math.random()*0.3, speed: 0.0005 + Math.random()*0.001 }));
 
@@ -329,10 +304,11 @@ document.addEventListener("keydown", e => {
 
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 document.addEventListener("mousemove", e => { if(document.pointerLockElement===canvas) mouseDX=e.movementX; });
+
+// Removed mouse shooting entirely. Click only locks pointer.
 canvas.onclick = () => {
     if(!gameStarted || paused) return;
     if(document.pointerLockElement !== canvas) { canvas.requestPointerLock(); } 
-    // Mouse firing removed
 };
 
 function canShoot() { return fireCooldown <= 0 && currentMag > 0 && !isReloading && !paused && gameStarted; }
@@ -414,7 +390,8 @@ function updateBullets(){
         if(b.life > 0 && Math.hypot(player.x - b.x, player.y - b.y) < 0.3){
             player.health -= 10; b.life = 0;
             if(player.health <= 0) {
-                resetGame("death"); // Partial reset (enemies only)
+                // Death = Partial Reset (Boss stays dead/damaged)
+                resetGame("death"); 
                 showMessage("YOU DIED. ENEMIES RESPAWNED.", 3000);
             }
         }
@@ -509,7 +486,7 @@ function updateSpaceship() {
     }
 }
 
-// ================= RENDER ENGINE =================
+// ================= FPS OPTIMIZED RENDER ENGINE =================
 function cast(){
     const w = canvas.width, h = canvas.height;
     
@@ -554,7 +531,7 @@ function cast(){
         let hgt = h / (correctedDist || 1);
 
         if(hit){
-            // Shadow blur REMOVED for high FPS performance. Use raw color scaling.
+            // No shadowBlur here. Strict RGB scaling for fast frames.
             let brightness = Math.max(0, 1 - (correctedDist / 12));
             let r = 50 * brightness, g = 70 * brightness, b = 100 * brightness;
             if(side){ r *= 0.7; g *= 0.7; b *= 0.7; } 
@@ -603,7 +580,7 @@ function drawSprites(zBuffer){
         let sizeMult = d.type==='boss'? 1.2 : d.type==='ship'? 1.1 : d.type==='enemy'? 0.7 : d.type==='health'? 0.3 : 0.25;
         let sz = Math.max(h / Math.max(dist, 0.3) * sizeMult, 20);
         
-        // Shadow Blur universally removed for performance
+        // No shadowBlur inside sprite loop for fast drawing
         if(d.type === 'enemy') {
             ctx.drawImage(imgEnemy, sx - sz/2, h/2 - sz/2, sz, sz);
             ctx.fillStyle = "black"; ctx.fillRect(sx - sz/2, h/2 - sz/2 - 10, sz, 6);
@@ -631,7 +608,7 @@ function drawSprites(zBuffer){
 }
 
 function drawBullets(zBuffer){
-    // Enlarged Vivid Blue Player Bullets
+    // Enlarged Vivid Blue Player Bullets (NO BLUR)
     bullets.forEach(b=>{
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
         let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle;
@@ -640,17 +617,16 @@ function drawBullets(zBuffer){
         if(Math.abs(ang) < Math.PI/2){
             let sx=canvas.width/2+Math.tan(ang)*canvas.width/2;
             if(sx>=0 && sx<canvas.width && zBuffer[Math.floor(sx)]>dist){
-                let sz=(canvas.height/Math.max(dist, 0.3))*0.15; // Increased size
-                // Removed shadowBlur to maintain frame rate
-                ctx.fillStyle="#00ffff"; // Outer cyan
-                ctx.fillRect(sx-6, canvas.height/2-sz/2, 12, sz); 
-                ctx.fillStyle="#ffffff"; // Inner white core
-                ctx.fillRect(sx-2, canvas.height/2-sz/2, 4, sz); 
+                let sz=(canvas.height/Math.max(dist, 0.3))*0.2; // Much bigger
+                ctx.fillStyle="#00ffff"; 
+                ctx.fillRect(sx-8, canvas.height/2-sz/2, 16, sz); // Wide Cyan base
+                ctx.fillStyle="#ffffff"; 
+                ctx.fillRect(sx-3, canvas.height/2-sz/2, 6, sz);  // Inner white core
             }
         }
     });
 
-    // Red Enemy Plasma Bullets
+    // Red Enemy Plasma Bullets (NO BLUR)
     enemyBullets.forEach(b => {
         let dist=Math.hypot(b.x-player.x, b.y-player.y);
         let ang=Math.atan2(b.y-player.y, b.x-player.x)-player.angle; 
@@ -667,7 +643,7 @@ function drawBullets(zBuffer){
         ctx.fillStyle = "#ffffff"; 
         ctx.fillRect(sx - size/2, canvas.height/2 - height/2, size, height); 
         ctx.fillStyle = "#ff0000"; 
-        ctx.globalAlpha = 0.6; // Use alpha instead of blur for glow
+        ctx.globalAlpha = 0.6; // Alpha blending replaces heavy blur
         ctx.fillRect(sx - size, canvas.height/2 - height/2 - size, size*2, height + size*2);
         ctx.globalAlpha = 1.0;
     });
@@ -694,7 +670,6 @@ function drawGun(){
     ctx.fillStyle="#0ff"; ctx.fillRect(-4, -220, 8, 20); 
     
     if(fireCooldown > 12 && !isReloading){ 
-        // Simulated Muzzle Flash (No ShadowBlur)
         ctx.fillStyle="rgba(0, 255, 255, 0.5)"; 
         ctx.beginPath(); ctx.arc(0, -225, 25, 0, Math.PI*2); ctx.fill(); 
         ctx.fillStyle="white";
@@ -720,8 +695,9 @@ function updateObjectivesHUD() {
     `;
 }
 
+// Split Reset Logic
 function resetGame(type = "death") {
-    // Reset player states
+    // Player stats always reset
     player = { x:3.5, y:3.5, angle:0, speed:0.06, health:100, ammo:5, maxAmmo:40 }; 
     currentMag = 5; isReloading = false; reloadTimer = 0; hasEscaped = false;
     bullets = []; enemyBullets = [];
@@ -734,11 +710,10 @@ function resetGame(type = "death") {
         boss.alive = true; boss.health = boss.maxHealth; boss.x = boss.homeX; boss.y = boss.homeY; boss.isFiring = false;
         bossKey.collected = false; bossKey.dropped = false; spaceship.unlocked = false;
     } else if (type === "death") {
-        // Partial wipe (Respawn)
+        // Partial wipe: Respawn grunts and packs. Boss status stays exactly as it was.
         enemies = enemiesTemplate.map(e => ({ ...e }));
         healthPickups = healthPickupsTemplate.map(p => ({ ...p, taken:false }));
-        ammoPickups = []; // Remove loose ammo drops
-        // Boss status strictly remains intact
+        ammoPickups = []; 
     }
 }
 
