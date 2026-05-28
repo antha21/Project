@@ -86,7 +86,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
 <div class="cbar on" id="cbarT"></div>
 <div class="cbar on" id="cbarB"></div>
 
-<!-- INTRO -->
 <div id="introOverlay">
   <canvas id="introCanvas"></canvas>
   <div id="deshrimpoLogo">
@@ -95,7 +94,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
   </div>
 </div>
 
-<!-- MAIN MENU -->
 <div id="mainMenu">
   <div id="menuBgImg"></div>
   <canvas id="roseCanvas"></canvas>
@@ -110,7 +108,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
   </div>
 </div>
 
-<!-- LOADING SCREEN -->
 <div id="loadingScreen">
   <div class="load-title">ENTERING THE FAMILY</div>
   <div class="load-quote">"Leave the gun. Take the cannoli."</div>
@@ -118,7 +115,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
   <div class="load-text" id="loadText">Preparing the hideout...</div>
 </div>
 
-<!-- HOW TO PLAY -->
 <div class="overlay-screen" id="howToScreen">
   <div class="overlay-panel">
     <div class="ov-title">How to Play</div>
@@ -135,7 +131,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
   </div>
 </div>
 
-<!-- PAUSE MENU -->
 <div id="pauseMenu">
   <div class="pause-panel">
     <div class="pause-title">PAUSED</div>
@@ -151,11 +146,9 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
   </div>
 </div>
 
-<!-- GAME CANVASES -->
 <canvas id="game"></canvas>
 <canvas id="hudCanvas"></canvas>
 
-<!-- CROSSHAIR -->
 <svg id="crosshair" width="44" height="44" viewBox="0 0 44 44">
   <line x1="22" y1="3" x2="22" y2="15" stroke="#c9a227" stroke-width="1.5" opacity="0.9"/>
   <line x1="22" y1="29" x2="22" y2="41" stroke="#c9a227" stroke-width="1.5" opacity="0.9"/>
@@ -165,7 +158,6 @@ input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;hei
 </svg>
 <div id="dmgVig"></div>
 
-<!-- AUDIO -->
 <audio id="bgMusic" loop><source src="Connect4_3/Colorado Rockies - Syphon Filter 2 Soundtrack.mp3" type="audio/mpeg"></audio>
 <audio id="shootSound"><source src="Connect4/ytmp3free.cc_realistic-machine-gun-sound-effects-for-video-project-youtubemp3free.org.mp3" type="audio/mpeg"></audio>
 <audio id="itemPickupSound"><source src="Connect4/Item Pick up Counter Strike Source  Sound Effect for editing.mp3" type="audio/mpeg"></audio>
@@ -236,8 +228,11 @@ function stopAll(){
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CANVAS SETUP
+// CANVAS SETUP & SCREEN BUFFER
 // ═══════════════════════════════════════════════════════════════
+let screenBuf=null, spx=null, sBW=0, sBH=0;
+let zBuf=null;
+
 const canvas   = document.getElementById('game');
 const ctx      = canvas.getContext('2d');
 const hudCanvas= document.getElementById('hudCanvas');
@@ -391,9 +386,6 @@ const ceilPx=ceilCx.getImageData(0,0,64,64).data;
 // SCREEN PIXEL BUFFER — THE CORE PERFORMANCE FIX
 // All floor/ceiling/wall pixels written here, one putImageData call
 // ═══════════════════════════════════════════════════════════════
-let screenBuf=null, spx=null, sBW=0, sBH=0;
-let zBuf=null;
-
 function ensureBuf(){
   const w=canvas.width, rh=canvas.height-HUD_H;
   if(!screenBuf||sBW!==w||sBH!==rh){
